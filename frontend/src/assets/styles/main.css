@@ -26,6 +26,13 @@
   --color-text-secondary: #6B7280;
   --color-border: #E5E7EB;
   
+  /* Aliases for components */
+  --surface: #FFFFFF;
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --border: #E5E7EB;
+  --bg: #F8FAFB;
+  
   /* Typography */
   --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -111,6 +118,13 @@
     --color-success: #10B981;
     --color-warning: #F59E0B;
     --color-error: #EF4444;
+    
+    /* Aliases for dark mode */
+    --surface: #1E293B;
+    --text-primary: #F1F5F9;
+    --text-secondary: #CBD5E1;
+    --border: #334155;
+    --bg: #0F172A;
   }
 }
 
@@ -121,6 +135,13 @@
   --color-text-primary: #F1F5F9;
   --color-text-secondary: #CBD5E1;
   --color-border: #334155;
+  
+  /* Aliases for dark mode */
+  --surface: #1E293B;
+  --text-primary: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --border: #334155;
+  --bg: #0F172A;
 }
 
 [data-color-scheme="light"] {
@@ -129,6 +150,13 @@
   --color-text-primary: #1F2937;
   --color-text-secondary: #6B7280;
   --color-border: #E5E7EB;
+  
+  /* Aliases for light mode */
+  --surface: #FFFFFF;
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --border: #E5E7EB;
+  --bg: #F8FAFB;
 }
 
 /* ============================================================================

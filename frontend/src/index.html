@@ -1,89 +1,74 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfolio Tracker v2.0</title>
-  
-  <!-- CSS -->
-  <link rel="stylesheet" href="assets/styles/main.css">
-  <link rel="stylesheet" href="assets/styles/layout.css">
-  <link rel="stylesheet" href="assets/styles/utilities.css">
-</head>
-<body data-color-scheme="light">
-  <!-- App Container -->
-  <div class="app-container">
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar"></div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Tracker - Gestor de Inversiones</title>
     
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-      <!-- Navbar -->
-      <div class="navbar" id="navbar"></div>
-      
-      <!-- Main Content -->
-      <main class="main-content" id="main-content">
-        <div class="loader">
-          <div class="loader-spinner"></div>
-          <div class="loader-text">Cargando...</div>
+    <!-- Styles -->
+    <link rel="stylesheet" href="./assets/styles/global.css">
+    <link rel="stylesheet" href="./assets/styles/layouts.css">
+    <link rel="stylesheet" href="./assets/styles/components.css">
+    <link rel="stylesheet" href="./assets/styles/utilities.css">
+    <link rel="stylesheet" href="./assets/styles/responsive.css">
+</head>
+<body>
+    <!-- Main App Shell -->
+    <div id="app">
+        <nav id="navbar-container"></nav>
+        <div class="app-layout">
+            <aside id="sidebar-container"></aside>
+            <main id="main-content"></main>
         </div>
-      </main>
     </div>
-  </div>
 
-  <!-- Notification Container -->
-  <div id="notification-container"></div>
+    <!-- Scripts in correct order -->
+    
+    <!-- Utils (load first) -->
+    <script src="./js/utils/validators.js"></script>
+    <script src="./js/utils/theme.js"></script>
+    <script src="./js/utils/formatters.js"></script>
+    <script src="./js/utils/storage.js"></script>
 
-  <!-- =========================================
-       SCRIPTS EN ORDEN CORRECTO
-       ========================================= -->
-  
-  <!-- 1. CONFIGURATION (debe ser primero) -->
-  <script src="js/config.js"></script>
-  
-  <!-- 2. UTILITIES (necesarios para todo) -->
-  <script src="js/utils/storage.js"></script>
-  <script src="js/utils/theme.js"></script>
-  <script src="js/utils/formatters.js"></script>
-  <script src="js/utils/validators.js"></script>
-  
-  <!-- 3. STATE MANAGEMENT (necesario antes de las vistas) -->
-  <script src="js/state.js"></script>
-  
-  <!-- 4. API CLIENT -->
-  <script src="js/api/index.js"></script>
-  
-  <!-- 5. COMPONENTS (UI primitivos) -->
-  <script src="js/components/card.js"></script>
-  <script src="js/components/button.js"></script>
-  <script src="js/components/input.js"></script>
-  <script src="js/components/badge.js"></script>
-  <script src="js/components/notifications.js"></script>
-  <script src="js/components/loader.js"></script>
-  <script src="js/components/modal.js"></script>
-  <script src="js/components/table.js"></script>
-  <script src="js/components/chart.js"></script>
-  <script src="js/components/form.js"></script>
-  
-  <!-- 6. SIDEBAR & NAVBAR (dependen de state) -->
-  <script src="js/components/sidebar.js"></script>
-  <script src="js/components/navbar.js"></script>
-  
-  <!-- 7. VIEWS (dependen de state y componentes) -->
-  <script src="js/views/dashboard.js"></script>
-  <script src="js/views/positions.js"></script>
-  <script src="js/views/analytics.js"></script>
-  <script src="js/views/portfolio.js"></script>
-  <script src="js/views/education.js"></script>
-  <script src="js/views/settings.js"></script>
-  
-  <!-- 8. ROUTER (necesita Views registradas) -->
-  <script src="js/router.js"></script>
-  
-  <!-- 9. APP MAIN -->
-  <script src="js/app.js"></script>
-  
-  <!-- 10. INITIALIZATION (último, después de todo) -->
-  <script src="js/init.js"></script>
+    <!-- Core State Management -->
+    <script src="./js/state.js"></script>
+
+    <!-- Database (NEW - load before components) -->
+    <script src="./js/db/database.js"></script>
+
+    <!-- Components -->
+    <script src="./js/components/sidebar.js"></script>
+    <script src="./js/components/navbar.js"></script>
+    <script src="./js/components/card.js"></script>
+    <script src="./js/components/button.js"></script>
+    <script src="./js/components/modal.js"></script>
+    <script src="./js/components/input.js"></script>
+    <script src="./js/components/badge.js"></script>
+    <script src="./js/components/loader.js"></script>
+    <script src="./js/components/notifications.js"></script>
+    <script src="./js/components/table.js"></script>
+    <script src="./js/components/form.js"></script>
+    <script src="./js/components/chart.js"></script>
+
+    <!-- Views -->
+    <script src="./js/views/dashboard.js"></script>
+    <script src="./js/views/positions.js"></script>
+    <script src="./js/views/analytics.js"></script>
+    <script src="./js/views/portfolio.js"></script>
+    <script src="./js/views/education.js"></script>
+    <script src="./js/views/settings.js"></script>
+
+    <!-- Router -->
+    <script src="./js/router.js"></script>
+
+    <!-- API --
+    <script src="./js/api/index.js"></script>
+
+    <!-- App Config -->
+    <script src="./js/config.js"></script>
+    <script src="./js/app.js"></script>
+
+    <!-- Initialization (load last) -->
+    <script src="./js/init.js"></script>
 </body>
 </html>

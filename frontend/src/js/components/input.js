@@ -2,24 +2,17 @@
  * Input Component
  */
 
-function createInput(options = {}) {
-  const {
-    type = 'text',
-    placeholder = '',
-    value = '',
-    label = '',
-    required = false
-  } = options;
-
-  const group = document.createElement('div');
-  group.className = 'form-group';
+function createInput(name, options = {}) {
+  const input = document.createElement('input');
+  input.type = options.type || 'text';
+  input.name = name;
+  input.className = 'form-input ' + (options.className || '');
+  input.placeholder = options.placeholder || '';
+  input.value = options.value || '';
   
-  let html = '';
-  if (label) {
-    html += `<label class="form-label">${label}${required ? '<span class="required">*</span>' : ''}</label>`;
+  if (options.required) {
+    input.required = true;
   }
-  html += `<input type="${type}" class="form-input" placeholder="${placeholder}" value="${value}" ${required ? 'required' : ''}>`;
   
-  group.innerHTML = html;
-  return group;
+  return input;
 }

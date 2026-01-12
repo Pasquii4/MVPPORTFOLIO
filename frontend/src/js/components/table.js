@@ -2,35 +2,34 @@
  * Table Component
  */
 
-function createTable(data = [], columns = []) {
+function createTable(columns, rows) {
   const table = document.createElement('table');
   table.className = 'data-table';
   
-  // Header
   const thead = document.createElement('thead');
   const headerRow = document.createElement('tr');
+  
   columns.forEach(col => {
     const th = document.createElement('th');
-    th.className = 'sortable';
-    th.textContent = col.label;
-    th.dataset.field = col.field;
+    th.textContent = col;
     headerRow.appendChild(th);
   });
+  
   thead.appendChild(headerRow);
   table.appendChild(thead);
   
-  // Body
   const tbody = document.createElement('tbody');
-  data.forEach(row => {
+  
+  rows.forEach(rowData => {
     const tr = document.createElement('tr');
-    columns.forEach(col => {
+    rowData.forEach(cell => {
       const td = document.createElement('td');
-      td.textContent = row[col.field] || '-';
+      td.textContent = cell;
       tr.appendChild(td);
     });
     tbody.appendChild(tr);
   });
-  table.appendChild(tbody);
   
+  table.appendChild(tbody);
   return table;
 }

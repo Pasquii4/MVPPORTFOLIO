@@ -2,35 +2,38 @@
  * Modal Component
  */
 
-function showModal(options = {}) {
-  const {
-    title = 'Modal',
-    content = '',
-    buttons = []
-  } = options;
-
+function showModal(title, content, actions = []) {
   const modal = document.createElement('div');
   modal.className = 'modal';
-  
-  let buttonsHtml = '';
-  buttons.forEach(btn => {
-    buttonsHtml += `<button class="btn btn-${btn.type || 'primary'}" onclick="${btn.onClick}">${btn.text}</button>`;
-  });
-
   modal.innerHTML = `
-    <div class="modal-backdrop" onclick="this.parentElement.remove()"></div>
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title">${title}</h2>
-          <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
-        </div>
-        <div class="modal-body">${content}</div>
-        <div class="modal-footer">${buttonsHtml}</div>
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>${title}</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">${content}</div>
+      <div class="modal-footer">
+        ${actions.map(action => `
+          <button class="btn ${action.className || 'btn-secondary'}" data-action="${action.id}">
+            ${action.text}
+          </button>
+        `).join('')}
       </div>
     </div>
   `;
-
+  
   document.body.appendChild(modal);
+  
+  modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
+  modal.querySelector('.modal-overlay').addEventListener('click', () => modal.remove());
+  
+  actions.forEach(action => {
+    const btn = modal.querySelector(`[data-action="${action.id}"]`);
+    if (btn && action.onClick) {
+      btn.addEventListener('click', action.onClick);
+    }
+  });
+  
   return modal;
 }

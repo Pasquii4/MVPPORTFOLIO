@@ -2,16 +2,9 @@
  * Badge Component
  */
 
-function createBadge(options = {}) {
-  const {
-    text = 'Badge',
-    type = 'primary',
-    size = 'md'
-  } = options;
-
+function createBadge(text, type = 'primary') {
   const badge = document.createElement('span');
-  badge.className = `badge badge-${type} badge-${size}`;
+  badge.className = `badge badge-${type}`;
   badge.textContent = text;
-  
   return badge;
 }

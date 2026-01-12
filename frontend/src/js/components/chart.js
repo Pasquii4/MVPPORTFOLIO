@@ -1,25 +1,14 @@
 /**
- * Chart Component (Placeholder)
+ * Chart Component (placeholder)
  */
 
-function createChart(options = {}) {
-  const {
-    type = 'line',
-    data = [],
-    labels = []
-  } = options;
-
-  const container = document.createElement('div');
-  container.className = 'chart-container';
+function createChart(containerId, type, data) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
   container.innerHTML = `
-    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--color-text-secondary);">
-      <div style="text-align: center;">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
-        <p>Gráfico de ${type}</p>
-        <small>Implementación de Chart.js próximamente</small>
-      </div>
+    <div style="height: 300px; background: var(--color-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+      <p style="color: var(--color-text-secondary);">Gráfico de ${type} (placeholder)</p>
     </div>
   `;
-  
-  return container;
 }

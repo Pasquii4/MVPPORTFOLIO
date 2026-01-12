@@ -2,23 +2,18 @@
  * Button Component
  */
 
-function createButton(options = {}) {
-  const {
-    text = 'Button',
-    type = 'primary',
-    size = 'md',
-    onClick = null,
-    disabled = false
-  } = options;
-
-  const button = document.createElement('button');
-  button.className = `btn btn-${type} btn-${size}`;
-  button.textContent = text;
-  button.disabled = disabled;
+function createButton(text, options = {}) {
+  const btn = document.createElement('button');
+  btn.className = `btn ${options.className || 'btn-primary'}`;
+  btn.textContent = text;
   
-  if (onClick && typeof onClick === 'function') {
-    button.addEventListener('click', onClick);
+  if (options.onClick) {
+    btn.addEventListener('click', options.onClick);
   }
   
-  return button;
+  if (options.disabled) {
+    btn.disabled = true;
+  }
+  
+  return btn;
 }

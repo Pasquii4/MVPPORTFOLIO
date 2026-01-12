@@ -3,20 +3,17 @@
  */
 
 function showLoader() {
-  const mainContent = document.getElementById('main-content');
-  if (mainContent) {
-    mainContent.innerHTML = `
-      <div class="loader">
-        <div class="loader-spinner"></div>
-        <div class="loader-text">Cargando...</div>
-      </div>
-    `;
-  }
+  const loader = document.createElement('div');
+  loader.className = 'loader';
+  loader.id = 'app-loader';
+  loader.innerHTML = `
+    <div class="loader-spinner"></div>
+    <div class="loader-text">Cargando...</div>
+  `;
+  return loader;
 }
 
 function hideLoader() {
-  const loader = document.querySelector('.loader');
-  if (loader) {
-    loader.remove();
-  }
+  const loader = document.getElementById('app-loader');
+  if (loader) loader.remove();
 }

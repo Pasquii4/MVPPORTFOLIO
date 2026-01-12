@@ -1,168 +1,131 @@
 /**
- * Application Initialization Script
- * Monta todos los componentes en el DOM e inicializa la app
- * 
- * IMPORTANTE: Este script debe ser el ÚLTIMO en cargar
+ * App Initialization
+ * Sistema de inicialización completo de la aplicación
+ * ESTE ARCHIVO DEBE SER EL ÚTIMO EN CARGAR
  */
 
-function initializeApp() {
-    console.log('🚀 [INIT] Starting Portfolio Tracker App initialization...');
-    
-    try {
-        // 1. Verificar que existen las clases
-        console.log('🔍 [INIT] Verifying dependencies...');
-        if (typeof Sidebar === 'undefined') {
-            throw new Error('Sidebar class not found. Make sure sidebar.js is loaded.');
-        }
-        if (typeof Navbar === 'undefined') {
-            throw new Error('Navbar class not found. Make sure navbar.js is loaded.');
-        }
-        console.log('✅ [INIT] All dependencies loaded');
-        
-        // 2. Inicializar tema
-        console.log('🎨 [INIT] Setting up theme...');
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.body.setAttribute('data-color-scheme', savedTheme);
-        console.log('✅ [INIT] Theme set to:', savedTheme);
-        
-        // 3. Crear instancia del Sidebar
-        console.log('📊 [INIT] Mounting Sidebar...');
-        const sidebarContainer = document.getElementById('sidebar');
-        if (!sidebarContainer) {
-            throw new Error('Sidebar container (#sidebar) not found in HTML');
-        }
-        
-        const sidebarItems = [
-            { id: 'dashboard', icon: '📊', label: 'Dashboard', href: '#/', active: true },
-            { id: 'positions', icon: '📈', label: 'Posiciones', href: '#/positions' },
-            { id: 'analytics', icon: '📉', label: 'Analytics', href: '#/analytics' },
-            { id: 'education', icon: '🎓', label: 'Educación', href: '#/education' },
-        ];
-        
-        const sidebar = Sidebar.create({
-            items: sidebarItems,
-            onItemClick: (item) => {
-                console.log('🔗 [SIDEBAR] Navigated to:', item.id);
-                // Navegar aquí
-            },
-        });
-        
-        if (!sidebar || !sidebar.getElement) {
-            throw new Error('Sidebar.create() did not return a valid sidebar instance');
-        }
-        
-        sidebarContainer.innerHTML = ''; // Limpiar
-        sidebarContainer.appendChild(sidebar.getElement());
-        window.sidebarInstance = sidebar;
-        console.log('✅ [INIT] Sidebar mounted successfully');
-        
-        // 4. Crear instancia del Navbar
-        console.log('🔗 [INIT] Mounting Navbar...');
-        const navbarContainer = document.getElementById('navbar');
-        if (!navbarContainer) {
-            throw new Error('Navbar container (#navbar) not found in HTML');
-        }
-        
-        const navbar = Navbar.create({
-            userName: 'Trader',
-            notificationsCount: 0,
-            onThemeToggle: () => {
-                const currentTheme = document.body.getAttribute('data-color-scheme') || 'light';
-                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                document.body.setAttribute('data-color-scheme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                console.log('🌙 [NAVBAR] Theme switched to:', newTheme);
-            },
-            onSearch: (query) => {
-                console.log('🔍 [NAVBAR] Search query:', query);
-            },
-            onNotifications: () => {
-                console.log('🔔 [NAVBAR] Notifications clicked');
-            },
-        });
-        
-        if (!navbar || !navbar.getElement) {
-            throw new Error('Navbar.create() did not return a valid navbar instance');
-        }
-        
-        navbarContainer.innerHTML = ''; // Limpiar
-        navbarContainer.appendChild(navbar.getElement());
-        window.navbarInstance = navbar;
-        console.log('✅ [INIT] Navbar mounted successfully');
-        
-        // 5. Renderizar contenido inicial (Dashboard)
-        console.log('🏠 [INIT] Loading initial content...');
-        const contentArea = document.getElementById('app-view');
-        if (contentArea) {
-            contentArea.innerHTML = `
-                <div class="dashboard-container" style="padding: 20px;">
-                    <h1 style="color: var(--text-primary); margin-bottom: 20px;">📊 Dashboard</h1>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                        <div style="background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <p style="color: var(--text-secondary); margin: 0 0 10px 0; font-size: 14px;">💰 Total Invertido</p>
-                            <p style="color: var(--text-primary); margin: 0; font-size: 28px; font-weight: bold;">$0.00</p>
-                        </div>
-                        <div style="background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <p style="color: var(--text-secondary); margin: 0 0 10px 0; font-size: 14px;">💹 Valor Actual</p>
-                            <p style="color: var(--text-primary); margin: 0; font-size: 28px; font-weight: bold;">$0.00</p>
-                        </div>
-                        <div style="background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <p style="color: var(--text-secondary); margin: 0 0 10px 0; font-size: 14px;">📈 P&L</p>
-                            <p style="color: var(--text-primary); margin: 0; font-size: 28px; font-weight: bold;">$0.00</p>
-                        </div>
-                        <div style="background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <p style="color: var(--text-secondary); margin: 0 0 10px 0; font-size: 14px;">🎯 ROI %</p>
-                            <p style="color: var(--text-primary); margin: 0; font-size: 28px; font-weight: bold;">0.00%</p>
-                        </div>
-                    </div>
-                    <div style="margin-top: 30px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
-                        <p style="color: var(--text-secondary); margin: 0 0 10px 0; font-size: 14px;">📊 Portfolio Status</p>
-                        <p style="color: var(--text-primary); margin: 0;">No hay posiciones cargadas. Conecta con el backend para cargar datos.</p>
-                    </div>
-                </div>
-            `;
-            console.log('✅ [INIT] Dashboard content rendered');
-        }
-        
-        console.log('🎉 [INIT] Application initialization complete!');
-        console.log('✨ App is ready! Open DevTools (F12) to see more info.');
-        
-    } catch (error) {
-        console.error('❌ [INIT] CRITICAL ERROR:', error);
-        console.error('Stack:', error.stack);
-        
-        // Mostrar error en la página
-        const contentArea = document.getElementById('app-view');
-        if (contentArea) {
-            contentArea.innerHTML = `
-                <div style="padding: 40px; text-align: center; color: #ef4444;">
-                    <h1>❌ Error Initializing App</h1>
-                    <p>${error.message}</p>
-                    <p style="font-family: monospace; font-size: 12px; color: #6b7280; margin-top: 20px; text-align: left; background: #f3f4f6; padding: 10px; border-radius: 4px; overflow: auto;">
-                        ${error.stack}
-                    </p>
-                </div>
-            `;
-        }
+(function initApp() {
+  // Verificar que todos los componentes estén cargados
+  const requiredComponents = [
+    { name: 'ThemeManager', type: 'object' },
+    { name: 'StorageManager', type: 'object' },
+    { name: 'Formatters', type: 'object' },
+    { name: 'Validators', type: 'object' },
+    { name: 'AppState', type: 'object' },
+    { name: 'router', type: 'object' },
+    { name: 'sidebarComponent', type: 'object' },
+    { name: 'navbarComponent', type: 'object' },
+    { name: 'Views', type: 'object' }
+  ];
+
+  let missingComponents = [];
+  requiredComponents.forEach(comp => {
+    if (typeof window[comp.name] === 'undefined') {
+      missingComponents.push(comp.name);
     }
-}
+  });
 
-// Ejecutar cuando el DOM esté listo
-if (document.readyState === 'loading') {
-    console.log('⏳ [INIT] Waiting for DOM to load...');
-    document.addEventListener('DOMContentLoaded', initializeApp);
-} else {
-    console.log('⚡ [INIT] DOM already loaded, initializing...');
-    initializeApp();
-}
+  if (missingComponents.length > 0) {
+    console.error('❌ Componentes faltantes:', missingComponents);
+    console.error('Por favor verifica que todos los archivos se están cargando en el orden correcto');
+    alert('Error: La aplicación no se pudo inicializar. Verifica la consola.');
+    return;
+  }
 
-// Global error handlers
-window.addEventListener('error', (event) => {
-    console.error('❌ [GLOBAL] Uncaught error:', event.error);
-});
+  console.log('✓ Todos los componentes cargados correctamente');
 
-window.addEventListener('unhandledrejection', (event) => {
-    console.error('❌ [GLOBAL] Unhandled promise rejection:', event.reason);
-});
+  // Esperar a que el DOM esté listo
+  if (document.readyState !== 'loading') {
+    startApp();
+  } else {
+    document.addEventListener('DOMContentLoaded', startApp);
+  }
 
-console.log('📝 [INIT] init.js loaded successfully');
+  function startApp() {
+    console.log('🚀 Iniciando aplicación...');
+
+    // 1. Inicializar tema
+    ThemeManager.init();
+    console.log('✓ Tema inicializado:', ThemeManager.get());
+
+    // 2. Renderizar sidebar
+    sidebarComponent.render();
+    console.log('✓ Sidebar renderizado');
+
+    // 3. Renderizar navbar
+    navbarComponent.render();
+    console.log('✓ Navbar renderizado');
+
+    // 4. Registrar rutas en el router
+    registerRoutes();
+    console.log('✓ Rutas registradas');
+
+    // 5. Inicializar router
+    router.init();
+    console.log('✓ Router inicializado');
+
+    // 6. Cargar vista inicial (dashboard)
+    router.handleRoute();
+    console.log('✓ Vista inicial cargada');
+
+    // 7. Setup de listeners globales
+    setupGlobalListeners();
+    console.log('✓ Listeners globales configurados');
+
+    // 8. Mensaje de éxito
+    console.log('✅ Aplicación lista para usar');
+    console.log(`Portfolio Tracker v${AppConfig.appVersion}`);
+  }
+
+  /**
+   * Registrar todas las rutas
+   */
+  function registerRoutes() {
+    router.register('/', Views.dashboard);
+    router.register('/dashboard', Views.dashboard);
+    router.register('/positions', Views.positions);
+    router.register('/analytics', Views.analytics);
+    router.register('/portfolio', Views.portfolio);
+    router.register('/education', Views.education);
+    router.register('/settings', Views.settings);
+  }
+
+  /**
+   * Configurar listeners globales
+   */
+  function setupGlobalListeners() {
+    // Escuchar cambios en el tema
+    document.addEventListener('themeChanged', (e) => {
+      console.log('Tema cambiado a:', e.detail.theme);
+      // Regenerar navbar para actualizar icono
+      navbarComponent.render();
+    });
+
+    // Escuchar cambios en el estado
+    document.addEventListener('stateChanged', (e) => {
+      console.log('Estado actualizado:', e.detail.key, e.detail.value);
+    });
+
+    // Navegación por teclado (Alt + n para siguiente vista)
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key === 'n') {
+        e.preventDefault();
+        // Navegar a siguiente ruta (desarrollo futuro)
+      }
+    });
+
+    // Manejar cambios de tamaño de ventana
+    window.addEventListener('resize', () => {
+      // Ajustar layout responsivo si es necesario
+    });
+  }
+})();
+
+// Log de debug en consola
+console.log(`
+%c📊 Portfolio Tracker v${AppConfig.appVersion}
+%cAplicación cargada correctamente
+`,
+  'color: #3B82F6; font-size: 16px; font-weight: bold;',
+  'color: #10B981; font-size: 12px;'
+);

@@ -1,277 +1,206 @@
 /**
- * Chart Wrapper Component - Simple chart rendering (requires Chart.js)
- * Usage: Chart.create({ type, data, options })
- * Note: Requires Chart.js library - add to HTML: <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ * Chart Component
+ * Gráficos dinámicos (con Chart.js)
  */
-class ChartComponent {
-  static create(options = {}) {
+class Chart {
+  /**
+   * Crear gráfico de línea
+   */
+  static createLineChart(options = {}) {
     const {
-      id = `chart-${Math.random().toString(36).substr(2, 9)}`,
-      type = 'pie', // 'pie', 'line', 'bar', 'doughnut', 'area'
-      title = '',
-      data = {},
-      chartOptions = {},
-      responsive = true,
-      height = 300,
-      className = '',
+      id = 'chart-' + Math.random().toString(36).substr(2, 9),
+      labels = [],
+      datasets = [],
+      title = 'Gráfico de Línea'
     } = options;
-
+    
     const container = document.createElement('div');
-    container.className = `chart-container ${className}`;
-
-    if (title) {
-      const titleEl = document.createElement('h3');
-      titleEl.className = 'chart-title';
-      titleEl.textContent = title;
-      container.appendChild(titleEl);
-    }
-
-    const canvasContainer = document.createElement('div');
-    canvasContainer.className = 'chart-canvas-wrapper';
-    canvasContainer.style.position = 'relative';
-    canvasContainer.style.height = `${height}px`;
-
+    container.className = 'chart-container';
+    
     const canvas = document.createElement('canvas');
     canvas.id = id;
-    canvasContainer.appendChild(canvas);
-    container.appendChild(canvasContainer);
-
-    // Chart instance placeholder
-    container.chartInstance = null;
-    container.data = data;
-
-    // Initialize on demand
-    container.render = function() {
-      if (typeof Chart === 'undefined') {
-        console.warn('Chart.js no está cargado. Agrega <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>');
-        return;
-      }
-
+    container.appendChild(canvas);
+    
+    // Esperar a que Chart.js esté disponible
+    if (typeof window.Chart !== 'undefined') {
       const ctx = canvas.getContext('2d');
-      const finalOptions = {
-        responsive: responsive,
-        maintainAspectRatio: false,
-        ...chartOptions,
-      };
-
-      if (this.chartInstance) {
-        this.chartInstance.destroy();
-      }
-
-      this.chartInstance = new Chart(ctx, {
-        type,
-        data,
-        options: finalOptions,
+      
+      const colors = [
+        'rgb(59, 130, 246)',
+        'rgb(34, 197, 94)',
+        'rgb(249, 115, 22)',
+        'rgb(168, 85, 247)'
+      ];
+      
+      const formattedDatasets = datasets.map((dataset, idx) => ({
+        label: dataset.label,
+        data: dataset.data,
+        borderColor: colors[idx % colors.length],
+        backgroundColor: colors[idx % colors.length].replace('rgb', 'rgba').replace(')', ', 0.1)'),
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true
+      }));
+      
+      new window.Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: formattedDatasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            title: {
+              display: !!title,
+              text: title
+            },
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
       });
-    };
-
+    } else {
+      canvas.textContent = 'Chart.js no disponible';
+    }
+    
     return container;
   }
 
-  // Pie chart
-  static pie(data, options = {}) {
-    return this.create({
-      type: 'pie',
-      data,
-      chartOptions: options,
-      ...options,
-    });
-  }
-
-  // Doughnut chart
-  static doughnut(data, options = {}) {
-    return this.create({
-      type: 'doughnut',
-      data,
-      chartOptions: options,
-      ...options,
-    });
-  }
-
-  // Line chart
-  static line(data, options = {}) {
-    return this.create({
-      type: 'line',
-      data,
-      chartOptions: {
-        plugins: {
-          filler: {
-            propagate: true,
+  /**
+   * Crear gráfico de barras
+   */
+  static createBarChart(options = {}) {
+    const {
+      id = 'chart-' + Math.random().toString(36).substr(2, 9),
+      labels = [],
+      datasets = [],
+      title = 'Gráfico de Barras'
+    } = options;
+    
+    const container = document.createElement('div');
+    container.className = 'chart-container';
+    
+    const canvas = document.createElement('canvas');
+    canvas.id = id;
+    container.appendChild(canvas);
+    
+    if (typeof window.Chart !== 'undefined') {
+      const ctx = canvas.getContext('2d');
+      
+      const colors = [
+        'rgb(59, 130, 246)',
+        'rgb(34, 197, 94)',
+        'rgb(249, 115, 22)',
+        'rgb(168, 85, 247)'
+      ];
+      
+      const formattedDatasets = datasets.map((dataset, idx) => ({
+        label: dataset.label,
+        data: dataset.data,
+        backgroundColor: colors[idx % colors.length],
+        borderColor: colors[idx % colors.length],
+        borderWidth: 1
+      }));
+      
+      new window.Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: formattedDatasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            title: {
+              display: !!title,
+              text: title
+            }
           },
-        },
-        ...options,
-      },
-      ...options,
-    });
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    } else {
+      canvas.textContent = 'Chart.js no disponible';
+    }
+    
+    return container;
   }
 
-  // Bar chart
-  static bar(data, options = {}) {
-    return this.create({
-      type: 'bar',
-      data,
-      chartOptions: options,
-      ...options,
-    });
-  }
-
-  // Portfolio Distribution - Pie chart
-  static portfolioDistribution(holdings = []) {
-    const labels = holdings.map(h => h.ticker);
-    const values = holdings.map(h => h.value);
-    const colors = [
-      '#3b82f6', '#10b981', '#f59e0b', '#ef4444',
-      '#8b5cf6', '#ec4899', '#14b8a6', '#f97316',
-    ];
-
-    return this.pie({
-      labels,
-      datasets: [
-        {
-          data: values,
-          backgroundColor: colors.slice(0, labels.length),
-          borderColor: 'rgba(255, 255, 255, 1)',
-          borderWidth: 2,
-        },
-      ],
-    }, {
-      title: 'Distribución del Portfolio',
-      plugins: {
-        legend: {
-          position: 'bottom',
-        },
-      },
-    });
-  }
-
-  // Performance Over Time - Line chart
-  static performanceOverTime(dates = [], values = []) {
-    return this.line({
-      labels: dates,
-      datasets: [
-        {
-          label: 'Valor del Portfolio',
-          data: values,
-          borderColor: '#3b82f6',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
-          borderWidth: 2,
-          fill: true,
-          tension: 0.4,
-          pointBackgroundColor: '#3b82f6',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-        },
-      ],
-    }, {
-      title: 'Performance a lo Largo del Tiempo',
-      plugins: {
-        legend: {
-          display: true,
-        },
-      },
-      scales: {
-        y: {
-          beginAtZero: false,
-        },
-      },
-    });
-  }
-
-  // Holdings Comparison - Bar chart
-  static holdingsComparison(holdings = []) {
-    const labels = holdings.map(h => h.ticker);
-    const gained = holdings.map(h => (h.current - h.bought) > 0 ? h.current - h.bought : 0);
-    const lost = holdings.map(h => (h.current - h.bought) < 0 ? Math.abs(h.current - h.bought) : 0);
-
-    return this.bar({
-      labels,
-      datasets: [
-        {
-          label: 'Ganancia',
-          data: gained,
-          backgroundColor: '#10b981',
-        },
-        {
-          label: 'Pérdida',
-          data: lost,
-          backgroundColor: '#ef4444',
-        },
-      ],
-    }, {
-      title: 'Comparación de Holdings',
-      indexAxis: 'y',
-      scales: {
-        x: {
-          stacked: true,
-        },
-        y: {
-          stacked: true,
-        },
-      },
-    });
-  }
-
-  // Risk vs Return scatter
-  static riskReturn(data = []) {
-    // data format: [{ ticker: 'AAPL', risk: 0.15, return: 0.25 }, ...]
-    return this.create({
-      type: 'bubble',
-      data: {
-        datasets: [
-          {
-            label: 'Holdings',
-            data: data.map(d => ({
-              x: d.risk * 100,
-              y: d.return * 100,
-              r: Math.sqrt(d.value || 1000) / 10,
-            })),
-            backgroundColor: '#3b82f6',
+  /**
+   * Crear gráfico de pastel
+   */
+  static createPieChart(options = {}) {
+    const {
+      id = 'chart-' + Math.random().toString(36).substr(2, 9),
+      labels = [],
+      data = [],
+      title = 'Gráfico de Pastel'
+    } = options;
+    
+    const container = document.createElement('div');
+    container.className = 'chart-container';
+    
+    const canvas = document.createElement('canvas');
+    canvas.id = id;
+    container.appendChild(canvas);
+    
+    if (typeof window.Chart !== 'undefined') {
+      const ctx = canvas.getContext('2d');
+      
+      const colors = [
+        'rgb(59, 130, 246)',
+        'rgb(34, 197, 94)',
+        'rgb(249, 115, 22)',
+        'rgb(168, 85, 247)',
+        'rgb(236, 72, 153)'
+      ];
+      
+      new window.Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: colors.slice(0, data.length),
             borderColor: '#fff',
-            borderWidth: 2,
-          },
-        ],
-      },
-      chartOptions: {
-        plugins: {
-          legend: {
-            display: false,
-          },
+            borderWidth: 2
+          }]
         },
-        scales: {
-          x: {
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
             title: {
-              display: true,
-              text: 'Riesgo (%)',
+              display: !!title,
+              text: title
             },
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Retorno (%)',
-            },
-          },
-        },
-      },
-    });
-  }
-
-  // Update chart data
-  static update(chartComponent, newData) {
-    if (!chartComponent.chartInstance) return;
-    chartComponent.chartInstance.data = newData;
-    chartComponent.chartInstance.update();
-  }
-
-  // Export chart as image
-  static exportAsImage(chartComponent, filename = 'chart.png') {
-    if (!chartComponent.chartInstance) return;
-    const url = chartComponent.chartInstance.canvas.toDataURL();
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    } else {
+      canvas.textContent = 'Chart.js no disponible';
+    }
+    
+    return container;
   }
 }
 
-export default ChartComponent;
+window.Chart = window.Chart || {}; // No sobrescribir Chart.js
+window.ChartComponent = Chart;

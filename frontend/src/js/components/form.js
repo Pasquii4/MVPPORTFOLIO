@@ -1,231 +1,154 @@
 /**
- * Form Builder Component - Build forms dynamically with validation
- * Usage: Form.create({ fields, onSubmit, onReset, validation })
+ * Form Component
+ * Formularios dinámicos con validación
  */
-import Input from './input.js';
-import Select from './select.js';
-import Button from './button.js';
+class DynamicForm {
+  constructor(options = {}) {
+    this.fields = options.fields || [];
+    this.submitText = options.submitText || 'Enviar';
+    this.onSubmit = options.onSubmit || null;
+    this.element = null;
+  }
 
-class Form {
-  static create(options = {}) {
-    const {
-      id = `form-${Math.random().toString(36).substr(2, 9)}`,
-      fields = [],
-      onSubmit = null,
-      onReset = null,
-      submitLabel = 'Enviar',
-      resetLabel = 'Limpiar',
-      validation = true,
-      className = '',
-      layout = 'vertical', // 'vertical', 'horizontal', 'grid'
-    } = options;
-
+  /**
+   * Renderizar formulario
+   */
+  render() {
     const form = document.createElement('form');
-    form.id = id;
-    form.className = `form form--${layout} ${className}`;
-    form.fieldElements = {};
-
-    // Render fields
-    fields.forEach(field => {
+    form.className = 'dynamic-form';
+    
+    // Campos
+    this.fields.forEach(field => {
       let fieldEl;
-
-      if (field.type === 'select') {
-        fieldEl = Select.create({
-          name: field.name,
-          label: field.label,
-          options: field.options || [],
-          required: field.required,
-          disabled: field.disabled,
-          onChange: field.onChange,
-          id: field.id,
-          size: field.size,
-        });
-      } else if (field.type === 'textarea') {
-        const container = document.createElement('div');
-        container.className = 'textarea-group';
-
-        if (field.label) {
-          const label = document.createElement('label');
-          label.className = 'textarea-label';
-          label.textContent = field.label;
-          if (field.required) label.innerHTML += '<span class="required">*</span>';
-          container.appendChild(label);
-        }
-
-        const textarea = document.createElement('textarea');
-        textarea.name = field.name;
-        textarea.placeholder = field.placeholder || '';
-        textarea.className = 'form-textarea';
-        textarea.required = field.required || false;
-        textarea.disabled = field.disabled || false;
-        textarea.value = field.value || '';
-
-        if (field.onChange) {
-          textarea.addEventListener('change', field.onChange);
-        }
-
-        container.appendChild(textarea);
-        fieldEl = container;
-      } else {
-        // Default to Input
-        fieldEl = Input.create({
-          type: field.type || 'text',
-          name: field.name,
+      
+      if (field.type === 'textarea') {
+        fieldEl = InputField.createTextarea({
           label: field.label,
           placeholder: field.placeholder,
-          value: field.value,
-          required: field.required,
-          disabled: field.disabled,
-          icon: field.icon,
-          size: field.size,
-          onChange: field.onChange,
-          onBlur: field.onBlur,
-          id: field.id,
+          name: field.name,
+          id: field.name,
+          rows: field.rows || 4,
+          value: field.value || '',
+          required: field.required
+        });
+      } else if (field.type === 'select') {
+        fieldEl = InputField.createSelect({
+          label: field.label,
+          name: field.name,
+          id: field.name,
+          options: field.options || [],
+          value: field.value || '',
+          required: field.required
+        });
+      } else {
+        fieldEl = InputField.create({
+          type: field.type || 'text',
+          label: field.label,
+          placeholder: field.placeholder,
+          name: field.name,
+          id: field.name,
+          value: field.value || '',
+          required: field.required
         });
       }
-
-      form.fieldElements[field.name] = fieldEl;
+      
       form.appendChild(fieldEl);
     });
-
-    // Buttons container
-    const buttonsContainer = document.createElement('div');
-    buttonsContainer.className = 'form-buttons';
-
+    
+    // Botón submit
     const submitBtn = Button.create({
-      label: submitLabel,
+      text: this.submitText,
       type: 'primary',
-      onClick: (e) => {
-        e.preventDefault();
-        if (validation && !Form.validate(form)) {
-          return;
-        }
-        if (onSubmit) {
-          const data = Form.getData(form);
-          onSubmit(data);
-        }
-      },
+      className: 'form-submit'
     });
-    buttonsContainer.appendChild(submitBtn);
-
-    if (onReset) {
-      const resetBtn = Button.create({
-        label: resetLabel,
-        type: 'ghost',
-        onClick: (e) => {
-          e.preventDefault();
-          form.reset();
-          Object.values(form.fieldElements).forEach(el => {
-            const errorEl = el.querySelector?.('.input-error');
-            if (errorEl) errorEl.remove();
-          });
-          if (onReset) onReset();
-        },
-      });
-      buttonsContainer.appendChild(resetBtn);
-    }
-
-    form.appendChild(buttonsContainer);
-
-    form.fieldNames = fields.map(f => f.name);
+    form.appendChild(submitBtn);
+    
+    form.addEventListener('submit', (e) => this.handleSubmit(e));
+    
+    this.element = form;
     return form;
   }
 
-  static getData(form) {
-    const data = {};
-
-    form.fieldNames.forEach(name => {
-      const fieldEl = form.fieldElements[name];
-      
-      if (fieldEl.querySelector) {
-        const input = fieldEl.querySelector('input, select, textarea');
-        if (input) {
-          data[name] = input.value;
-        } else if (fieldEl.getValue) {
-          data[name] = fieldEl.getValue();
-        }
-      } else if (fieldEl.getValue) {
-        data[name] = fieldEl.getValue();
-      }
-    });
-
-    return data;
-  }
-
-  static validate(form) {
-    let isValid = true;
-
-    form.fieldNames.forEach(name => {
-      const fieldEl = form.fieldElements[name];
-      const input = fieldEl.querySelector ? fieldEl.querySelector('input, select, textarea') : null;
-
-      if (input && input.required && !input.value.trim()) {
-        if (fieldEl.setError) {
-          fieldEl.setError('Este campo es requerido');
-        } else {
-          const errorEl = fieldEl.querySelector('.input-error');
-          if (!errorEl) {
-            const err = document.createElement('p');
-            err.className = 'input-error';
-            err.textContent = 'Este campo es requerido';
-            fieldEl.appendChild(err);
-          }
-        }
-        isValid = false;
-      } else if (fieldEl.setError) {
-        fieldEl.setError(null);
-      }
-    });
-
-    return isValid;
-  }
-
-  static reset(form) {
-    form.reset();
-    form.fieldNames.forEach(name => {
-      const fieldEl = form.fieldElements[name];
-      if (fieldEl.setError) {
-        fieldEl.setError(null);
-      }
-    });
-  }
-
-  static setValues(form, values) {
-    Object.entries(values).forEach(([name, value]) => {
-      const fieldEl = form.fieldElements[name];
-      if (fieldEl.setValue) {
-        fieldEl.setValue(value);
-      } else {
-        const input = fieldEl.querySelector('input, select, textarea');
-        if (input) {
-          input.value = value;
-        }
-      }
-    });
-  }
-
-  static getValues(form) {
-    return Form.getData(form);
-  }
-
-  static setFieldError(form, fieldName, error) {
-    const fieldEl = form.fieldElements[fieldName];
-    if (fieldEl.setError) {
-      fieldEl.setError(error);
+  /**
+   * Manejar submit
+   */
+  handleSubmit(e) {
+    e.preventDefault();
+    
+    // Validar
+    if (!this.validate()) {
+      Notifications.error('Por favor completa todos los campos requeridos');
+      return;
+    }
+    
+    // Obtener datos
+    const formData = this.getValues();
+    
+    // Callback
+    if (this.onSubmit && typeof this.onSubmit === 'function') {
+      this.onSubmit(formData);
     }
   }
 
-  static disableField(form, fieldName) {
-    const fieldEl = form.fieldElements[fieldName];
-    const input = fieldEl.querySelector('input, select, textarea');
-    if (input) input.disabled = true;
+  /**
+   * Validar formulario
+   */
+  validate() {
+    const inputs = this.element.querySelectorAll('.form-input');
+    let isValid = true;
+    
+    inputs.forEach(input => {
+      if (input.required && !input.value.trim()) {
+        input.classList.add('error');
+        isValid = false;
+      } else {
+        input.classList.remove('error');
+      }
+    });
+    
+    return isValid;
   }
 
-  static enableField(form, fieldName) {
-    const fieldEl = form.fieldElements[fieldName];
-    const input = fieldEl.querySelector('input, select, textarea');
-    if (input) input.disabled = false;
+  /**
+   * Obtener valores
+   */
+  getValues() {
+    const values = {};
+    const inputs = this.element.querySelectorAll('.form-input');
+    
+    inputs.forEach(input => {
+      if (input.name) {
+        values[input.name] = input.value;
+      }
+    });
+    
+    return values;
+  }
+
+  /**
+   * Establecer valores
+   */
+  setValues(values) {
+    const inputs = this.element.querySelectorAll('.form-input');
+    
+    inputs.forEach(input => {
+      if (input.name && values.hasOwnProperty(input.name)) {
+        input.value = values[input.name];
+      }
+    });
+  }
+
+  /**
+   * Limpiar formulario
+   */
+  reset() {
+    if (this.element) {
+      this.element.reset();
+      this.element.querySelectorAll('.form-input').forEach(input => {
+        input.classList.remove('error');
+      });
+    }
   }
 }
 
-export default Form;
+window.DynamicForm = DynamicForm;

@@ -1,51 +1,40 @@
 /**
- * Theme Manager
- * Gestiona el tema de la aplicación (dark/light)
+ * Theme Manager - Handle light/dark mode
  */
 
 const themeManager = {
-  current: 'light',
-
-  // Inicializar
-  init: function() {
-    this.current = localStorage.getItem('portfolio_theme') || 'light';
-    this.apply(this.current);
-  },
-
-  // Obtener tema actual
+  // Get current theme
   get: function() {
-    return this.current;
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved;
+    
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
   },
 
-  // Establecer tema
+  // Set theme
   set: function(theme) {
-    if (theme === 'dark' || theme === 'light') {
-      this.current = theme;
-      this.apply(theme);
-      localStorage.setItem('portfolio_theme', theme);
-      console.log(`🎨 Tema: ${theme}`);
-    }
-  },
-
-  // Aplicar tema
-  apply: function(theme) {
-    const html = document.documentElement;
+    const root = document.documentElement;
+    const body = document.body;
+    
     if (theme === 'dark') {
-      html.setAttribute('data-color-scheme', 'dark');
-      document.body.style.colorScheme = 'dark';
+      root.style.colorScheme = 'dark';
+      body.setAttribute('data-color-scheme', 'dark');
     } else {
-      html.setAttribute('data-color-scheme', 'light');
-      document.body.style.colorScheme = 'light';
+      root.style.colorScheme = 'light';
+      body.setAttribute('data-color-scheme', 'light');
     }
+    
+    localStorage.setItem('theme', theme);
+    return theme;
   },
 
-  // Toggle tema
+  // Toggle between light/dark
   toggle: function() {
-    const newTheme = this.current === 'dark' ? 'light' : 'dark';
-    this.set(newTheme);
-    return newTheme;
+    const current = this.get();
+    const newTheme = current === 'dark' ? 'light' : 'dark';
+    return this.set(newTheme);
   }
 };
-
-// Inicializar tema
-themeManager.init();

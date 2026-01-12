@@ -34,31 +34,42 @@
   <!-- Notification Container -->
   <div id="notification-container"></div>
 
-  <!-- Scripts en orden -->
-  <!-- 1. Utils y Helpers -->
-  <script src="js/utils/storage.js"></script>
-  <script src="js/utils/validators.js"></script>
-  <script src="js/utils/formatters.js"></script>
-  <script src="js/utils/theme.js"></script>
+  <!-- =========================================
+       SCRIPTS EN ORDEN CORRECTO
+       ========================================= -->
   
-  <!-- 2. API -->
+  <!-- 1. CONFIGURATION (debe ser primero) -->
+  <script src="js/config.js"></script>
+  
+  <!-- 2. UTILITIES (necesarios para todo) -->
+  <script src="js/utils/storage.js"></script>
+  <script src="js/utils/theme.js"></script>
+  <script src="js/utils/formatters.js"></script>
+  <script src="js/utils/validators.js"></script>
+  
+  <!-- 3. STATE MANAGEMENT (necesario antes de las vistas) -->
+  <script src="js/state.js"></script>
+  
+  <!-- 4. API CLIENT -->
   <script src="js/api/index.js"></script>
   
-  <!-- 3. Components -->
-  <script src="js/components/navbar.js"></script>
-  <script src="js/components/sidebar.js"></script>
+  <!-- 5. COMPONENTS (UI primitivos) -->
   <script src="js/components/card.js"></script>
-  <script src="js/components/modal.js"></script>
-  <script src="js/components/notifications.js"></script>
   <script src="js/components/button.js"></script>
   <script src="js/components/input.js"></script>
+  <script src="js/components/badge.js"></script>
+  <script src="js/components/notifications.js"></script>
+  <script src="js/components/loader.js"></script>
+  <script src="js/components/modal.js"></script>
   <script src="js/components/table.js"></script>
   <script src="js/components/chart.js"></script>
   <script src="js/components/form.js"></script>
-  <script src="js/components/loader.js"></script>
-  <script src="js/components/badge.js"></script>
   
-  <!-- 4. Views -->
+  <!-- 6. SIDEBAR & NAVBAR (dependen de state) -->
+  <script src="js/components/sidebar.js"></script>
+  <script src="js/components/navbar.js"></script>
+  
+  <!-- 7. VIEWS (dependen de state y componentes) -->
   <script src="js/views/dashboard.js"></script>
   <script src="js/views/positions.js"></script>
   <script src="js/views/analytics.js"></script>
@@ -66,13 +77,13 @@
   <script src="js/views/education.js"></script>
   <script src="js/views/settings.js"></script>
   
-  <!-- 5. Core (State Management) -->
-  <script src="js/config.js"></script>
-  <script src="js/state.js"></script>
+  <!-- 8. ROUTER (necesita Views registradas) -->
   <script src="js/router.js"></script>
+  
+  <!-- 9. APP MAIN -->
   <script src="js/app.js"></script>
   
-  <!-- 6. Init (Last) -->
+  <!-- 10. INITIALIZATION (último, después de todo) -->
   <script src="js/init.js"></script>
 </body>
 </html>

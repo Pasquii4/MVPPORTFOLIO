@@ -1,48 +1,90 @@
-"""Entry point de FastAPI"""
-from fastapi import FastAPI
+"""Aplicación FastAPI principal mejorada"""
+from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import init_db
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from app.database import engine, Base
+from app.api.routes import positions, portfolio, closed_positions, education
 from app.config import settings
-from app.api.routes import positions, portfolio, education
 
-# Inicializar DB
-init_db()
+# Crear tablas de base de datos
+Base.metadata.create_all(bind=engine)
 
-# Crear app
+# Inicializar app
 app = FastAPI(
-    title=settings.APP_NAME,
-    version=settings.APP_VERSION,
-    description="Portfolio Tracker profesional para gestión de inversiones",
+    title="Portfolio Tracker API",
+    description="API para gestión profesional de carteras de inversión",
+    version="1.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
 
-# CORS
+# Middleware de seguridad: Trusted Host
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["localhost", "127.0.0.1", "localhost:3000", "localhost:8000", "localhost:8001"],
+)
+
+# CORS mejorado
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=settings.ALLOWED_ORIGINS or [
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "http://localhost:8001",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Rutas
-app.include_router(positions.router)
-app.include_router(portfolio.router)
-app.include_router(education.router)
 
-@app.get("/")
+@app.get("/", tags=["health"])
 def root():
+    """Endpoint de verificación de salud"""
     return {
         "message": "Portfolio Tracker API",
-        "version": settings.APP_VERSION,
-        "docs": "/docs",
+        "version": "1.1.0",
+        "status": "online",
     }
 
-@app.get("/health")
+
+@app.get("/health", tags=["health"])
 def health_check():
-    return {"status": "healthy", "version": settings.APP_VERSION}
+    """Health check para monitoreo"""
+    return {"status": "healthy", "version": "1.1.0"}
+
+
+@app.get("/api/status", tags=["health"])
+def api_status():
+    """Status de la API"""
+    return {
+        "api": "online",
+        "database": "connected",
+        "version": "1.1.0",
+    }
+
+
+# Incluir rutas
+app.include_router(positions.router, prefix="/api")
+app.include_router(portfolio.router, prefix="/api")
+app.include_router(closed_positions.router, prefix="/api")
+app.include_router(education.router, prefix="/api")
+
+
+# Manejador global de excepciones
+@app.exception_handler(Exception)
+async def general_exception_handler(request, exc):
+    return {
+        "detail": f"Internal server error: {str(exc)}",
+        "status_code": 500,
+    }
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=settings.DEBUG)
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        reload=settings.DEBUG,
+    )

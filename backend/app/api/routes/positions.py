@@ -1,87 +1,156 @@
-"""Rutas de posiciones"""
-from fastapi import APIRouter, Depends, HTTPException
+"""Rutas mejoradas de gestión de posiciones con mejor manejo de errores"""
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.schemas.position import PositionCreate, PositionUpdate, PositionResponse, ClosedPositionResponse
-from app.services.position_service import PositionService
-from typing import List
 from datetime import date
+from app.database import get_db
+from app.schemas.position import (
+    PositionCreate,
+    PositionUpdate,
+    PositionResponse,
+    SellPositionRequest,
+)
+from app.services.position_service import PositionService
 
-router = APIRouter(prefix="/api/positions", tags=["positions"])
+router = APIRouter(prefix="/positions", tags=["positions"])
 
-@router.get("/", response_model=List[PositionResponse])
-def get_all_positions(db: Session = Depends(get_db)):
+
+@router.get("/", response_model=list[PositionResponse])
+def get_positions(db: Session = Depends(get_db)):
     """Obtener todas las posiciones abiertas"""
     try:
         positions = PositionService.get_all_positions(db)
         return positions
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener posiciones: {str(e)}",
+        )
+
 
 @router.get("/{position_id}", response_model=PositionResponse)
 def get_position(position_id: int, db: Session = Depends(get_db)):
     """Obtener posición por ID"""
-    position = PositionService.get_position_by_id(db, position_id)
-    if not position:
-        raise HTTPException(status_code=404, detail="Position not found")
-    return position
+    try:
+        if position_id <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="position_id debe ser mayor a 0",
+            )
 
-@router.post("/", response_model=PositionResponse)
-def create_position(position: PositionCreate, db: Session = Depends(get_db)):
+        position = PositionService.get_position_by_id(db, position_id)
+        if not position:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Posición {position_id} no encontrada",
+            )
+        return position
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener posición: {str(e)}",
+        )
+
+
+@router.post("/", response_model=PositionResponse, status_code=status.HTTP_201_CREATED)
+def create_position(position_data: PositionCreate, db: Session = Depends(get_db)):
     """Crear nueva posición"""
     try:
-        return PositionService.create_position(db, position)
+        new_position = PositionService.create_position(db, position_data)
+        return new_position
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Datos inválidos: {str(e)}",
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al crear posición: {str(e)}",
+        )
+
 
 @router.put("/{position_id}", response_model=PositionResponse)
-def update_position(position_id: int, position_update: PositionUpdate, db: Session = Depends(get_db)):
-    """Actualizar posición (normalmente precio actual)"""
+def update_position(
+    position_id: int, update_data: PositionUpdate, db: Session = Depends(get_db)
+):
+    """Actualizar posición existente"""
     try:
-        return PositionService.update_position(db, position_id, position_update)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        if position_id <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="position_id debe ser mayor a 0",
+            )
 
-@router.delete("/{position_id}")
+        updated_position = PositionService.update_position(db, position_id, update_data)
+        return updated_position
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Datos inválidos: {str(e)}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al actualizar posición: {str(e)}",
+        )
+
+
+@router.delete("/{position_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_position(position_id: int, db: Session = Depends(get_db)):
-    """Eliminar posición (sin vender)"""
+    """Eliminar posición"""
     try:
-        PositionService.delete_position(db, position_id)
-        return {"message": "Position deleted successfully"}
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        if position_id <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="position_id debe ser mayor a 0",
+            )
 
-@router.post("/{position_id}/sell")
-def sell_position(position_id: int, sell_price: float, sell_date: str, db: Session = Depends(get_db)):
-    """Vender posición (pasar a cerrada)"""
+        PositionService.delete_position(db, position_id)
+        return None
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Error: {str(e)}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al eliminar posición: {str(e)}",
+        )
+
+
+@router.post("/{position_id}/sell", response_model=dict)
+def sell_position(
+    position_id: int, sell_data: SellPositionRequest, db: Session = Depends(get_db)
+):
+    """Vender posición (mover a cerradas)"""
     try:
-        sell_date_obj = date.fromisoformat(sell_date)
-        closed = PositionService.sell_position(db, position_id, sell_price, sell_date_obj)
+        if position_id <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="position_id debe ser mayor a 0",
+            )
+
+        closed_position = PositionService.sell_position(
+            db, position_id, sell_data.sell_price, sell_data.sell_date
+        )
         return {
-            "message": "Position sold successfully",
+            "message": "Posición vendida exitosamente",
             "closed_position": {
-                "id": closed.id,
-                "ticker": closed.ticker,
-                "pl": closed.total_pl,
-                "pl_percentage": closed.pl_percentage,
-            }
+                "id": closed_position.id,
+                "ticker": closed_position.ticker,
+                "pnl": closed_position.total_pl,
+            },
         }
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Datos inválidos: {str(e)}",
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/closed/all", response_model=List[ClosedPositionResponse])
-def get_closed_positions(db: Session = Depends(get_db)):
-    """Obtener posiciones cerradas"""
-    try:
-        positions = PositionService.get_closed_positions(db)
-        return positions
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al vender posición: {str(e)}",
+        )

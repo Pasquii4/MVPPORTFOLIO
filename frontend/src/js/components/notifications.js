@@ -1,129 +1,92 @@
 /**
- * Sistema mejorado de notificaciones con mejor UX
+ * Notifications Component
+ * Sistema de notificaciones
  */
-
-const NotificationManager = (() => {
-  const container = document.querySelector('.notifications-container') || createContainer();
-
-  function createContainer() {
-    const div = document.createElement('div');
-    div.className = 'notifications-container';
-    div.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      pointer-events: none;
-    `;
-    document.body.appendChild(div);
-    return div;
-  }
-
-  function createNotification(message, type = 'info', duration = 5000) {
+class Notifications {
+  /**
+   * Crear notificación
+   * @param {Object} options - Opciones
+   * @param {string} options.message - Mensaje
+   * @param {string} options.type - Tipo (success, error, warning, info)
+   * @param {number} options.duration - Duración en ms (0 = manual)
+   */
+  static create(options = {}) {
+    const {
+      message = '',
+      type = 'info',
+      duration = 3000
+    } = options;
+    
     const notification = document.createElement('div');
-    const icons = {
-      success: '✓',
-      error: '✕',
-      warning: '⚠',
-      info: 'ℹ',
-    };
-
-    const colors = {
-      success: '#10b981',
-      error: '#ef4444',
-      warning: '#f59e0b',
-      info: '#3b82f6',
-    };
-
     notification.className = `notification notification-${type}`;
-    notification.style.cssText = `
-      background: white;
-      border-left: 4px solid ${colors[type]};
-      padding: 16px;
-      margin-bottom: 10px;
-      border-radius: 6px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      max-width: 400px;
-      animation: slideInRight 0.3s ease-out;
-      pointer-events: auto;
-      cursor: pointer;
+    notification.innerHTML = `
+      <div class="notification-content">
+        <span class="notification-message">${message}</span>
+        <button class="notification-close" aria-label="Cerrar">×</button>
+      </div>
     `;
-
-    const icon = document.createElement('span');
-    icon.textContent = icons[type];
-    icon.style.cssText = `
-      color: ${colors[type]};
-      font-weight: bold;
-      font-size: 18px;
-      flex-shrink: 0;
-    `;
-
-    const text = document.createElement('span');
-    text.textContent = message;
-    text.style.cssText = `
-      color: #1f2937;
-      font-size: 14px;
-      flex-grow: 1;
-    `;
-
-    notification.appendChild(icon);
-    notification.appendChild(text);
-
-    // Click para cerrar
-    notification.addEventListener('click', () => removeNotification(notification));
-
-    container.appendChild(notification);
-
-    // Auto-close
-    if (duration > 0) {
-      setTimeout(() => removeNotification(notification), duration);
-    }
-
+    
     return notification;
   }
 
-  function removeNotification(notification) {
-    notification.style.animation = 'slideOutRight 0.3s ease-in';
-    setTimeout(() => notification.remove(), 300);
+  /**
+   * Mostrar notificación
+   */
+  static show(options = {}) {
+    const { duration = 3000 } = options;
+    const notification = this.create(options);
+    
+    const container = document.getElementById('notification-container');
+    if (!container) return notification;
+    
+    container.appendChild(notification);
+    
+    // Agregar animación
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // Cerrar con botón
+    const closeBtn = notification.querySelector('.notification-close');
+    const remove = () => {
+      notification.classList.remove('show');
+      setTimeout(() => notification.remove(), 300);
+    };
+    closeBtn.addEventListener('click', remove);
+    
+    // Auto-close si tiene duración
+    if (duration > 0) {
+      setTimeout(remove, duration);
+    }
+    
+    return notification;
   }
 
-  return {
-    success: (msg, duration = 5000) => createNotification(msg, 'success', duration),
-    error: (msg, duration = 7000) => createNotification(msg, 'error', duration),
-    warning: (msg, duration = 5000) => createNotification(msg, 'warning', duration),
-    info: (msg, duration = 5000) => createNotification(msg, 'info', duration),
-    loading: (msg) => createNotification(msg, 'info', 0),
-  };
-})();
+  /**
+   * Notificación de éxito
+   */
+  static success(message, duration = 3000) {
+    return this.show({ message, type: 'success', duration });
+  }
 
-// Agregar estilos de animación
-if (!document.querySelector('style[data-notifications]')) {
-  const style = document.createElement('style');
-  style.setAttribute('data-notifications', 'true');
-  style.textContent = `
-    @keyframes slideInRight {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-    @keyframes slideOutRight {
-      from {
-        transform: translateX(0);
-        opacity: 1;
-      }
-      to {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-    }
-  `;
-  document.head.appendChild(style);
+  /**
+   * Notificación de error
+   */
+  static error(message, duration = 5000) {
+    return this.show({ message, type: 'error', duration });
+  }
+
+  /**
+   * Notificación de advertencia
+   */
+  static warning(message, duration = 4000) {
+    return this.show({ message, type: 'warning', duration });
+  }
+
+  /**
+   * Notificación de información
+   */
+  static info(message, duration = 3000) {
+    return this.show({ message, type: 'info', duration });
+  }
 }
+
+window.Notifications = Notifications;

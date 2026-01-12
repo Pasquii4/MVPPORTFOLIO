@@ -1,133 +1,134 @@
 /**
- * Sidebar Navigation Component
- * Features: Collapsible, icons, active states, animations
+ * Sidebar Component
+ * Navegación principal de la aplicación
  */
-
 class Sidebar {
-  constructor(options = {}) {
-    this.options = {
-      collapsible: true,
-      collapsed: false,
-      width: '280px',
-      miniWidth: '80px',
-      items: [],
-      onItemClick: () => {},
-      ...options,
-    };
-    this.isCollapsed = this.options.collapsed;
+  constructor() {
     this.element = null;
-    this.items = new Map();
+    this.isOpen = false;
   }
 
-  static create(options) {
-    const sidebar = new Sidebar(options);
-    sidebar.render();
-    return sidebar;
-  }
-
+  /**
+   * Renderizar sidebar
+   */
   render() {
-    this.element = document.createElement('aside');
-    this.element.className = `sidebar ${this.isCollapsed ? 'sidebar--collapsed' : ''}`;
-    this.element.style.setProperty('--sidebar-width', this.options.width);
-    this.element.style.setProperty('--sidebar-mini-width', this.options.miniWidth);
+    const currentTheme = ThemeManager.get();
+    const html = `
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="logo-icon">📊</div>
+          <span class="logo-text">Portfolio</span>
+        </div>
+        <button class="sidebar-toggle-mobile" id="sidebar-close">
+          <span>✕</span>
+        </button>
+      </div>
 
-    const header = document.createElement('div');
-    header.className = 'sidebar-header';
-    header.innerHTML = `
-      <div class="sidebar-brand">
-        <span class="sidebar-logo">Chart</span>
-        <h1 class="sidebar-title">Portfolio</h1>
+      <nav class="sidebar-nav">
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a href="#/" class="nav-link active" data-route="dashboard">
+              <span class="nav-icon">📊</span>
+              <span class="nav-label">Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#/positions" class="nav-link" data-route="positions">
+              <span class="nav-icon">📈</span>
+              <span class="nav-label">Posiciones</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#/analytics" class="nav-link" data-route="analytics">
+              <span class="nav-icon">📉</span>
+              <span class="nav-label">Analytics</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#/portfolio" class="nav-link" data-route="portfolio">
+              <span class="nav-icon">🎯</span>
+              <span class="nav-label">Portfolio</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#/education" class="nav-link" data-route="education">
+              <span class="nav-icon">🎓</span>
+              <span class="nav-label">Educación</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#/settings" class="nav-link" data-route="settings">
+              <span class="nav-icon">⚙️</span>
+              <span class="nav-label">Configuración</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p class="app-version">v2.0.0</p>
       </div>
     `;
 
-    if (this.options.collapsible) {
-      const toggleBtn = document.createElement('button');
-      toggleBtn.className = 'sidebar-toggle';
-      toggleBtn.textContent = '≡';
-      toggleBtn.addEventListener('click', () => this.toggle());
-      header.appendChild(toggleBtn);
-    }
-
-    const nav = document.createElement('nav');
-    nav.className = 'sidebar-nav';
-    this.options.items.forEach((item) => {
-      const navItem = this.createNavItem(item);
-      nav.appendChild(navItem);
-      this.items.set(item.id || item.label, navItem);
-    });
-
-    const footer = document.createElement('div');
-    footer.className = 'sidebar-footer';
-    footer.innerHTML = `<div class="sidebar-user"><p class="user-name">User</p></div>`;
-
-    this.element.appendChild(header);
-    this.element.appendChild(nav);
-    this.element.appendChild(footer);
-    return this.element;
+    this.element = document.getElementById('sidebar');
+    this.element.innerHTML = html;
+    this.element.classList.add('sidebar');
+    
+    this.attachEvents();
   }
 
-  createNavItem(item) {
-    const navItem = document.createElement('a');
-    navItem.href = item.href || '#';
-    navItem.className = `nav-item ${item.active ? 'active' : ''}`;
-    navItem.title = item.label;
-
-    const icon = document.createElement('span');
-    icon.className = 'nav-icon';
-    icon.textContent = item.icon || 'O';
-
-    const label = document.createElement('span');
-    label.className = 'nav-label';
-    label.textContent = item.label;
-
-    navItem.appendChild(icon);
-    navItem.appendChild(label);
-
-    navItem.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.element.querySelectorAll('.nav-item').forEach((el) => {
-        el.classList.remove('active');
+  /**
+   * Adjuntar eventos
+   */
+  attachEvents() {
+    // Links de navegación
+    const navLinks = this.element.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.setActive(link);
+        // Cerrar sidebar en mobile
+        if (window.innerWidth < 1024) {
+          this.toggleMobile();
+        }
       });
-      navItem.classList.add('active');
-      this.options.onItemClick(item, e);
     });
 
-    return navItem;
-  }
-
-  toggle() {
-    this.isCollapsed = !this.isCollapsed;
-    this.element.classList.toggle('sidebar--collapsed');
-    localStorage.setItem('sidebar-collapsed', this.isCollapsed);
-  }
-
-  setActiveItem(itemId) {
-    this.element.querySelectorAll('.nav-item').forEach((el) => {
-      el.classList.remove('active');
-    });
-    const item = this.items.get(itemId);
-    if (item) item.classList.add('active');
-  }
-
-  addItem(item) {
-    const nav = this.element.querySelector('.sidebar-nav');
-    const navItem = this.createNavItem(item);
-    nav.appendChild(navItem);
-    this.items.set(item.id || item.label, navItem);
-  }
-
-  removeItem(itemId) {
-    const item = this.items.get(itemId);
-    if (item) {
-      item.remove();
-      this.items.delete(itemId);
+    // Botón cerrar (mobile)
+    const closeBtn = this.element.querySelector('#sidebar-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => this.toggleMobile());
     }
   }
 
-  getElement() {
-    return this.element;
+  /**
+   * Establecer link activo
+   */
+  setActive(link) {
+    this.element.querySelectorAll('.nav-link').forEach(l => {
+      l.classList.remove('active');
+    });
+    link.classList.add('active');
+  }
+
+  /**
+   * Toggle sidebar en mobile
+   */
+  toggleMobile() {
+    this.isOpen = !this.isOpen;
+    this.element.classList.toggle('mobile-open');
+  }
+
+  /**
+   * Actualizar ruta activa según URL actual
+   */
+  updateActive(route) {
+    const link = this.element.querySelector(`[data-route="${route}"]`);
+    if (link) {
+      this.setActive(link);
+    }
   }
 }
 
-// Registrar globalmente (sin export para scripts normales)
-window.Sidebar = Sidebar;
+// Crear instancia global
+const sidebarComponent = new Sidebar();

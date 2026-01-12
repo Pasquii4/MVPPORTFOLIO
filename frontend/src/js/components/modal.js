@@ -1,218 +1,85 @@
 /**
- * Modal Component - Advanced modal/dialog component
- * Usage: Modal.create({ title, content, buttons, size, closeButton })
+ * Modal Component
+ * Diálogos modales reutilizables
  */
 class Modal {
+  /**
+   * Crear modal
+   * @param {Object} options - Opciones
+   * @param {string} options.title - Título
+   * @param {string} options.content - Contenido HTML
+   * @param {Array} options.buttons - Array de botones {text, type, onClick}
+   */
   static create(options = {}) {
     const {
-      id = `modal-${Math.random().toString(36).substr(2, 9)}`,
       title = '',
       content = '',
-      buttons = [],
-      size = 'default', // 'small', 'default', 'large', 'fullscreen'
-      closeButton = true,
-      onClose = null,
-      backdropClose = true,
-      className = '',
+      buttons = []
     } = options;
-
-    // Backdrop
-    const backdrop = document.createElement('div');
-    backdrop.className = `modal-backdrop modal-backdrop--${size}`;
-    backdrop.id = `${id}-backdrop`;
-    backdrop.dataset.modalId = id;
-
-    if (backdropClose) {
-      backdrop.addEventListener('click', (e) => {
-        if (e.target === backdrop) {
-          Modal.close(id);
-          if (onClose) onClose();
-        }
-      });
-    }
-
-    // Modal
-    const modal = document.createElement('div');
-    modal.className = `modal modal--${size} ${className}`;
-    modal.id = id;
-    modal.role = 'dialog';
-    modal.setAttribute('aria-labelledby', `${id}-title`);
-
-    // Header
-    const header = document.createElement('div');
-    header.className = 'modal-header';
-
-    if (title) {
-      const titleEl = document.createElement('h2');
-      titleEl.className = 'modal-title';
-      titleEl.id = `${id}-title`;
-      titleEl.textContent = title;
-      header.appendChild(titleEl);
-    }
-
-    if (closeButton) {
-      const closeBtn = document.createElement('button');
-      closeBtn.className = 'modal-close-btn';
-      closeBtn.innerHTML = '&times;';
-      closeBtn.setAttribute('aria-label', 'Cerrar');
-      closeBtn.addEventListener('click', () => {
-        Modal.close(id);
-        if (onClose) onClose();
-      });
-      header.appendChild(closeBtn);
-    }
-
-    modal.appendChild(header);
-
-    // Body
-    const body = document.createElement('div');
-    body.className = 'modal-body';
-
-    if (typeof content === 'string') {
-      body.innerHTML = content;
-    } else if (content instanceof HTMLElement) {
-      body.appendChild(content);
-    }
-
-    modal.appendChild(body);
-
-    // Footer con botones
-    if (buttons.length > 0) {
-      const footer = document.createElement('div');
-      footer.className = 'modal-footer';
-
-      buttons.forEach(btn => {
-        const button = document.createElement('button');
-        button.textContent = btn.label;
-        button.className = `btn btn--${btn.type || 'secondary'}`;
-
-        if (btn.onClick) {
-          button.addEventListener('click', (e) => {
-            btn.onClick(e);
-            if (btn.closeOnClick !== false) {
-              Modal.close(id);
-              if (onClose) onClose();
-            }
-          });
-        } else {
-          button.addEventListener('click', () => {
-            Modal.close(id);
-            if (onClose) onClose();
-          });
-        }
-
-        footer.appendChild(button);
-      });
-
-      modal.appendChild(footer);
-    }
-
-    backdrop.appendChild(modal);
-
-    // Store reference
-    Modal.instances = Modal.instances || {};
-    Modal.instances[id] = {
-      backdrop,
-      modal,
-      options,
-    };
-
-    return backdrop;
-  }
-
-  static open(modalId, parentEl = document.body) {
-    const instance = Modal.instances[modalId];
-    if (!instance) return;
-
-    const { backdrop } = instance;
-    parentEl.appendChild(backdrop);
-    backdrop.classList.add('modal-backdrop--active');
-    backdrop.querySelector('.modal').classList.add('modal--active');
     
-    // Prevent body scroll
-    document.body.style.overflow = 'hidden';
-  }
-
-  static close(modalId) {
-    const instance = Modal.instances[modalId];
-    if (!instance) return;
-
-    const { backdrop, modal } = instance;
-    modal.classList.remove('modal--active');
-    backdrop.classList.remove('modal-backdrop--active');
-
-    setTimeout(() => {
-      if (backdrop.parentElement) {
-        backdrop.remove();
-      }
-      document.body.style.overflow = '';
-    }, 300);
-  }
-
-  static closeAll() {
-    Object.keys(Modal.instances || {}).forEach(id => {
-      Modal.close(id);
-    });
-  }
-
-  // Predefined modals
-  static alert(title, message, onClose) {
-    const modal = this.create({
-      title,
-      content: message,
-      buttons: [
-        { label: 'OK', type: 'primary' }
-      ],
-      onClose,
-    });
-    this.open(modal.id);
-    return modal.id;
-  }
-
-  static confirm(title, message, onConfirm, onCancel) {
-    const modal = this.create({
-      title,
-      content: message,
-      buttons: [
-        { label: 'Cancelar', type: 'ghost', onClick: onCancel || (() => {}) },
-        { label: 'Confirmar', type: 'primary', onClick: onConfirm || (() => {}) }
-      ],
-    });
-    this.open(modal.id);
-    return modal.id;
-  }
-
-  static success(title, message, onClose) {
-    const content = `
-      <div style="text-align: center; padding: 20px;">
-        <span style="font-size: 48px;">✅</span>
-        <p>${message}</p>
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    
+    modal.innerHTML = `
+      <div class="modal-backdrop"></div>
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">${title}</h2>
+            <button class="modal-close" aria-label="Cerrar">&times;</button>
+          </div>
+          <div class="modal-body">${content}</div>
+          <div class="modal-footer">
+            <!-- Buttons will be added here -->
+          </div>
+        </div>
       </div>
     `;
-    return this.alert(title, content, onClose);
-  }
-
-  static error(title, message, onClose) {
-    const content = `
-      <div style="text-align: center; padding: 20px;">
-        <span style="font-size: 48px;">❌</span>
-        <p>${message}</p>
-      </div>
-    `;
-    return this.alert(title, content, onClose);
-  }
-
-  static loading(title = 'Cargando...') {
-    const modal = this.create({
-      title,
-      content: '<div class="spinner spinner--default" style="margin: 20px auto;"></div>',
-      closeButton: false,
-      backdropClose: false,
-      size: 'small',
+    
+    // Agregar botones
+    const footer = modal.querySelector('.modal-footer');
+    buttons.forEach(btn => {
+      const button = Button.create({
+        text: btn.text,
+        type: btn.type || 'primary',
+        onClick: btn.onClick,
+        className: 'modal-btn'
+      });
+      footer.appendChild(button);
     });
-    this.open(modal.id);
-    return modal.id;
+    
+    // Cerrar modal
+    const closeBtn = modal.querySelector('.modal-close');
+    const backdrop = modal.querySelector('.modal-backdrop');
+    
+    const closeModal = () => {
+      modal.classList.add('closing');
+      setTimeout(() => modal.remove(), 300);
+    };
+    
+    closeBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', closeModal);
+    
+    // ESC para cerrar
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') closeModal();
+    };
+    document.addEventListener('keydown', handleEsc);
+    
+    modal._closeModal = closeModal;
+    
+    return modal;
+  }
+
+  /**
+   * Mostrar modal
+   */
+  static show(options = {}) {
+    const modal = this.create(options);
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('active'), 10);
+    return modal;
   }
 }
 
-export default Modal;
+window.Modal = Modal;

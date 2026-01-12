@@ -1,83 +1,55 @@
 /**
- * Button Component - Reusable button element with variants
- * Usage: Button.create({ label, type, size, disabled, onClick, loading })
+ * Button Component
+ * Botones reutilizables
  */
 class Button {
+  /**
+   * Crear botón
+   * @param {Object} options - Opciones del botón
+   * @param {string} options.text - Texto del botón
+   * @param {string} options.type - Tipo (primary, secondary, danger, success)
+   * @param {Function} options.onClick - Callback al hacer click
+   * @param {string} options.className - Clases adicionales
+   * @param {boolean} options.disabled - Deshabilitado
+   */
   static create(options = {}) {
     const {
-      label = 'Button',
-      type = 'primary', // 'primary', 'secondary', 'danger', 'ghost'
-      size = 'default', // 'small', 'default', 'large'
-      disabled = false,
+      text = 'Botón',
+      type = 'primary',
       onClick = null,
-      loading = false,
-      icon = null,
       className = '',
-      id = null,
+      disabled = false
     } = options;
-
+    
     const button = document.createElement('button');
-    button.className = `btn btn--${type} btn--${size} ${className}`;
-    button.disabled = disabled || loading;
-
-    if (id) button.id = id;
-
-    const iconHTML = icon ? `<span class="btn__icon">${icon}</span>` : '';
-    const loadingHTML = loading ? '<span class="btn__spinner"></span>' : '';
-    const labelHTML = `<span class="btn__label">${label}</span>`;
-
-    button.innerHTML = `${loadingHTML}${iconHTML}${labelHTML}`;
-
-    if (onClick && !disabled) {
+    button.className = `btn btn-${type} ${className}`;
+    button.textContent = text;
+    button.disabled = disabled;
+    
+    if (onClick && typeof onClick === 'function') {
       button.addEventListener('click', onClick);
     }
-
-    // Store reference to loading state
-    button._loading = loading;
-
+    
     return button;
   }
 
-  // Predefined variants
-  static primary(label, onClick) {
-    return this.create({ label, type: 'primary', onClick });
-  }
-
-  static secondary(label, onClick) {
-    return this.create({ label, type: 'secondary', onClick });
-  }
-
-  static danger(label, onClick) {
-    return this.create({ label, type: 'danger', onClick });
-  }
-
-  static ghost(label, onClick) {
-    return this.create({ label, type: 'ghost', onClick });
-  }
-
-  // Action buttons
-  static save(onClick) {
-    return this.create({ label: 'Guardar', type: 'primary', onClick, icon: '💾' });
-  }
-
-  static cancel(onClick) {
-    return this.create({ label: 'Cancelar', type: 'ghost', onClick });
-  }
-
-  static delete(onClick) {
-    return this.create({ label: 'Eliminar', type: 'danger', onClick, icon: '🗑️' });
-  }
-
-  static add(onClick) {
-    return this.create({ label: 'Agregar', type: 'primary', onClick, icon: '➕' });
-  }
-
-  // Update loading state
-  static setLoading(buttonElement, loading = true) {
-    buttonElement._loading = loading;
-    buttonElement.disabled = loading;
-    buttonElement.classList.toggle('btn--loading', loading);
+  /**
+   * Crear botón de icono
+   */
+  static createIconButton(options = {}) {
+    const { icon = '•', title = '', onClick = null, className = '' } = options;
+    
+    const button = document.createElement('button');
+    button.className = `btn-icon ${className}`;
+    button.innerHTML = icon;
+    button.title = title;
+    
+    if (onClick && typeof onClick === 'function') {
+      button.addEventListener('click', onClick);
+    }
+    
+    return button;
   }
 }
 
-export default Button;
+window.Button = Button;

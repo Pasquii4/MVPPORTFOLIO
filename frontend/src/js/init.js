@@ -16,80 +16,98 @@ document.addEventListener('DOMContentLoaded', function() {
       { name: 'StorageManager', check: () => typeof StorageManager !== 'undefined' },
       { name: 'themeManager', check: () => typeof themeManager !== 'undefined' },
       { name: 'AppState', check: () => typeof AppState !== 'undefined' },
-      { name: 'Views', check: () => typeof Views !== 'undefined' },
+      { name: 'renderSidebar', check: () => typeof renderSidebar === 'function' },
+      { name: 'renderNavbar', check: () => typeof renderNavbar === 'function' },
       { name: 'router', check: () => typeof router !== 'undefined' }
     ];
 
     let allLoaded = true;
+    const missingDeps = [];
+    
     dependencies.forEach(dep => {
       if (dep.check()) {
         console.log(`✅ ${dep.name} cargado`);
       } else {
         console.error(`❌ ${dep.name} NO cargado`);
         allLoaded = false;
+        missingDeps.push(dep.name);
       }
     });
 
     if (!allLoaded) {
-      console.error('❌ No todas las dependencias se cargaron correctamente');
-      document.getElementById('main-content').innerHTML = '<div style="padding: 20px; color: red;">Error: No se cargaron todas las dependencias</div>';
+      console.error('❌ Dependencias faltantes:', missingDeps);
+      document.getElementById('main-content').innerHTML = `<div style="padding: 20px; color: red;">Error: Faltan dependencias: ${missingDeps.join(', ')}</div>`;
       return;
     }
 
-    // Aplicar tema guardado
-    const savedTheme = StorageManager.get('theme', 'light');
-    themeManager.set(savedTheme);
-    console.log(`🎨 Tema aplicado: ${savedTheme}`);
+    console.log('✅ Todas las dependencias cargadas correctamente');
 
-    // Cargar posiciones desde almacenamiento
-    const savedPositions = StorageManager.get('positions');
-    if (savedPositions && Array.isArray(savedPositions)) {
-      AppState.data.positions = savedPositions;
-      console.log(`📊 ${savedPositions.length} posiciones cargadas`);
+    // Inicializar tema
+    try {
+      const savedTheme = StorageManager.get('theme', 'light');
+      themeManager.set(savedTheme);
+      console.log(`🎨 Tema aplicado: ${savedTheme}`);
+    } catch (e) {
+      console.error('Error al aplicar tema:', e);
     }
 
-    // Renderizar navbar
+    // Inicializar state
     try {
-      if (typeof renderNavbar === 'function') {
-        renderNavbar();
-        console.log('✅ Navbar renderizado');
+      const savedPositions = StorageManager.get('positions');
+      if (savedPositions && Array.isArray(savedPositions)) {
+        AppState.data.positions = savedPositions;
+        AppState.recalculatePortfolio();
+        console.log(`📊 ${savedPositions.length} posiciones cargadas`);
       }
     } catch (e) {
-      console.error('Error en navbar:', e);
+      console.error('Error al cargar posiciones:', e);
     }
 
-    // Renderizar sidebar
+    // Renderizar componentes fijos
     try {
-      if (typeof renderSidebar === 'function') {
-        renderSidebar();
-        console.log('✅ Sidebar renderizado');
-      }
+      renderSidebar();
+      console.log('✅ Sidebar renderizado');
     } catch (e) {
       console.error('Error en sidebar:', e);
     }
 
-    // Registrar rutas
-    if (typeof router !== 'undefined') {
-      router.register('/', Views.dashboard);
-      router.register('/dashboard', Views.dashboard);
-      router.register('/positions', Views.positions);
-      router.register('/analytics', Views.analytics);
-      router.register('/portfolio', Views.portfolio);
-      router.register('/education', Views.education);
-      router.register('/settings', Views.settings);
-      console.log('✅ Rutas registradas');
+    try {
+      renderNavbar();
+      console.log('✅ Navbar renderizado');
+    } catch (e) {
+      console.error('Error en navbar:', e);
+    }
 
-      // Navegar a dashboard por defecto
+    // Registrar todas las rutas
+    try {
+      if (typeof Views === 'undefined') {
+        console.warn('⚠️ Views no está definido, creando objeto vacío');
+        window.Views = {};
+      }
+
+      // Esperar un poco para que todas las vistas se carguen
       setTimeout(() => {
+        router.register('/', Views.dashboard || function() { document.getElementById('main-content').innerHTML = '<p>Dashboard no cargado</p>'; });
+        router.register('/dashboard', Views.dashboard || function() {});
+        router.register('/positions', Views.positions || function() {});
+        router.register('/analytics', Views.analytics || function() {});
+        router.register('/portfolio', Views.portfolio || function() {});
+        router.register('/education', Views.education || function() {});
+        router.register('/settings', Views.settings || function() {});
+        
+        console.log('✅ Rutas registradas');
+
+        // Navegar a dashboard por defecto
         if (!window.location.hash) {
           window.location.hash = '#/';
         } else {
-          // Trigger route change si ya hay hash
           router.handleRouteChange();
         }
+        
+        console.log('✅ Aplicación iniciada correctamente');
       }, 100);
+    } catch (e) {
+      console.error('Error registrando rutas:', e);
     }
-
-    console.log('✅ Aplicación iniciada correctamente');
-  }, 500);
+  }, 800);
 });

@@ -2,7 +2,7 @@
 from fastapi import APIRouter
 from app.utils.constants import RATIOS, GLOSSARY
 
-router = APIRouter(prefix="/api/education", tags=["education"])
+router = APIRouter(prefix="/education", tags=["education"])
 
 @router.get("/ratios")
 def get_ratios():

@@ -61,7 +61,7 @@ class Navbar {
     notificationsContainer.className = 'navbar-notifications';
     this.notificationsBell = document.createElement('button');
     this.notificationsBell.className = 'navbar-icon-btn';
-    this.notificationsBell.innerHTML = '\ud83d\udd14';
+    this.notificationsBell.innerHTML = '🔔';
     if (this.options.notificationsCount > 0) {
       const badge = document.createElement('span');
       badge.className = 'notification-badge';
@@ -77,7 +77,7 @@ class Navbar {
     // Theme toggle
     const themeBtn = document.createElement('button');
     themeBtn.className = 'navbar-icon-btn navbar-theme-btn';
-    themeBtn.innerHTML = this.isDarkMode ? '\u2600' : '\ud83c\udf19';
+    themeBtn.innerHTML = this.isDarkMode ? '☀' : '🌙';
     themeBtn.title = 'Toggle theme';
     themeBtn.addEventListener('click', () => {
       this.toggleTheme();
@@ -174,4 +174,5 @@ class Navbar {
   }
 }
 
-export default Navbar;
+// Registrar globalmente (sin export para scripts normales)
+window.Navbar = Navbar;

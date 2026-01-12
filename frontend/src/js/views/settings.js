@@ -1,133 +1,154 @@
 /**
  * Settings View
- * Configuración de la aplicación
+ * Gestiona configuración de usuario, tema y notificaciones
  */
+
+const Views = window.Views || {};
+
 Views.settings = function() {
-  const container = document.getElementById('app-view');
-  container.innerHTML = '';
-  
-  const title = document.createElement('h1');
-  title.className = 'page-title';
-  title.textContent = '⚙️ Configuración';
-  container.appendChild(title);
-  
-  // Sección de Tema
-  const themeSection = document.createElement('section');
-  themeSection.className = 'settings-section';
-  
-  const themeTitle = document.createElement('h2');
-  themeTitle.textContent = 'Tema';
-  themeSection.appendChild(themeTitle);
-  
-  const currentTheme = ThemeManager.get();
-  const themeLabel = document.createElement('label');
-  themeLabel.className = 'settings-option';
-  
-  const themeToggle = document.createElement('input');
-  themeToggle.type = 'checkbox';
-  themeToggle.checked = currentTheme === 'dark';
-  themeToggle.addEventListener('change', () => {
-    ThemeManager.toggle();
-    const newTheme = ThemeManager.get();
-    themeToggle.checked = newTheme === 'dark';
-    Notifications.success('Tema actualizado');
-  });
-  
-  themeLabel.appendChild(themeToggle);
-  themeLabel.innerHTML += `
-    <div class="option-content">
-      <span class="option-title">Modo Oscuro</span>
-      <span class="option-description">Activa el modo oscuro para proteger tus ojos</span>
+  const mainContent = document.getElementById('main-content');
+  const user = AppState.get('user');
+  const currentTheme = AppState.get('theme');
+
+  const html = `
+    <div class="page-container">
+      <!-- Header -->
+      <div class="mb-4">
+        <h1 class="page-title">⚙️ Configuración</h1>
+      </div>
+
+      <!-- Settings Grid -->
+      <div style="max-width: 600px;">
+        <!-- Tema -->
+        <div class="settings-section mb-4">
+          <h2 style="font-size: 1.1rem; margin-bottom: 16px;">Apariencia</h2>
+          
+          <div class="settings-option" onclick="toggleTheme()">
+            <input type="checkbox" id="dark-mode-toggle" ${currentTheme === 'dark' ? 'checked' : ''}>
+            <div class="option-content" style="flex: 1;">
+              <div class="option-title">Modo Oscuro</div>
+              <div class="option-description">Activa el tema oscuro para reducir fatiga ocular</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Perfil -->
+        <div class="settings-section mb-4">
+          <h2 style="font-size: 1.1rem; margin-bottom: 16px;">Perfil</h2>
+          
+          <div class="card">
+            <div class="card-body">
+              <div class="form-group mb-3">
+                <label class="form-label">Nombre</label>
+                <input type="text" class="form-input" value="${user.name}" id="user-name">
+              </div>
+              <div class="form-group mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" value="${user.email}" id="user-email">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fecha de Registro</label>
+                <input type="text" class="form-input" value="${Formatters.date(user.joinDate)}" disabled>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button class="btn btn-primary" onclick="saveUserSettings()">
+                <span style="margin-right: 8px;">💾</span> Guardar Cambios
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notificaciones -->
+        <div class="settings-section mb-4">
+          <h2 style="font-size: 1.1rem; margin-bottom: 16px;">Notificaciones</h2>
+          
+          <div class="settings-option">
+            <input type="checkbox" checked>
+            <div class="option-content" style="flex: 1;">
+              <div class="option-title">Alertas de Precio</div>
+              <div class="option-description">Recibe notificaciones cuando alcanzas objetivos de precio</div>
+            </div>
+          </div>
+          <div class="settings-option">
+            <input type="checkbox" checked>
+            <div class="option-content" style="flex: 1;">
+              <div class="option-title">Resumen Diario</div>
+              <div class="option-description">Recibe resumen de tu portafolio cada día</div>
+            </div>
+          </div>
+          <div class="settings-option">
+            <input type="checkbox">
+            <div class="option-content" style="flex: 1;">
+              <div class="option-title">Noticias de Mercado</div>
+              <div class="option-description">Recibe actualizaciones de noticias financieras</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Acciones Peligrosas -->
+        <div class="settings-section mb-4">
+          <h2 style="font-size: 1.1rem; margin-bottom: 16px; color: var(--color-error);">Zona de Peligro</h2>
+          
+          <div class="card" style="border-left: 3px solid var(--color-error);">
+            <div class="card-body">
+              <p style="color: var(--color-text-secondary); margin-bottom: 16px;">
+                Estas acciones son irreversibles. Úsalas con cuidado.
+              </p>
+              <button class="btn btn-outline" onclick="resetData()" style="color: var(--color-error); border-color: var(--color-error);">
+                <span style="margin-right: 8px;">🗑️</span> Limpiar Datos
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
-  
-  themeSection.appendChild(themeLabel);
-  container.appendChild(themeSection);
-  
-  // Sección de Perfil
-  const profileSection = document.createElement('section');
-  profileSection.className = 'settings-section';
-  
-  const profileTitle = document.createElement('h2');
-  profileTitle.textContent = 'Perfil';
-  profileSection.appendChild(profileTitle);
-  
-  const form = new DynamicForm({
-    fields: [
-      {
-        name: 'name',
-        label: 'Nombre',
-        type: 'text',
-        placeholder: 'Tu nombre',
-        value: 'Usuario',
-        required: true
-      },
-      {
-        name: 'email',
-        label: 'Email',
-        type: 'email',
-        placeholder: 'tu@email.com',
-        value: 'usuario@example.com',
-        required: true
-      },
-      {
-        name: 'phone',
-        label: 'Teléfono',
-        type: 'tel',
-        placeholder: '+34 666 666 666',
-        required: false
-      }
-    ],
-    submitText: 'Guardar Cambios',
-    onSubmit: (data) => {
-      AppState.set('user', data);
-      Notifications.success('Perfil actualizado correctamente');
-      console.log('Datos guardados:', data);
-    }
-  });
-  
-  profileSection.appendChild(form.render());
-  container.appendChild(profileSection);
-  
-  // Sección de Notificaciones
-  const notifSection = document.createElement('section');
-  notifSection.className = 'settings-section';
-  
-  const notifTitle = document.createElement('h2');
-  notifTitle.textContent = 'Notificaciones';
-  notifSection.appendChild(notifTitle);
-  
-  const notifOptions = [
-    { id: 'email_alerts', label: 'Alertas por Email', description: 'Recibe alertas de cambios importantes' },
-    { id: 'price_updates', label: 'Actualizaciones de Precio', description: 'Notificaciones de cambios de precio' }
-  ];
-  
-  notifOptions.forEach(opt => {
-    const optLabel = document.createElement('label');
-    optLabel.className = 'settings-option';
-    
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = true;
-    
-    optLabel.appendChild(checkbox);
-    optLabel.innerHTML += `
-      <div class="option-content">
-        <span class="option-title">${opt.label}</span>
-        <span class="option-description">${opt.description}</span>
-      </div>
-    `;
-    
-    notifSection.appendChild(optLabel);
-  });
-  
-  container.appendChild(notifSection);
-  
-  if (navbarComponent) {
-    navbarComponent.setTitle('⚙️ Configuración');
-  }
-  
-  if (sidebarComponent) {
-    sidebarComponent.updateActive('settings');
-  }
+
+  mainContent.innerHTML = html;
+  attachSettingsEvents();
 };
+
+function toggleTheme() {
+  const toggle = document.getElementById('dark-mode-toggle');
+  const newTheme = toggle.checked ? 'dark' : 'light';
+  themeManager.set(newTheme);
+  AppState.set('theme', newTheme);
+  showNotification(`Tema cambiado a ${newTheme}`, 'success');
+}
+
+function saveUserSettings() {
+  const name = document.getElementById('user-name').value;
+  const email = document.getElementById('user-email').value;
+  
+  if (!name || !email) {
+    showNotification('Por favor completa todos los campos', 'error');
+    return;
+  }
+  
+  AppState.set('user.name', name);
+  AppState.set('user.email', email);
+  showNotification('Perfil actualizado correctamente', 'success');
+}
+
+function resetData() {
+  if (confirm('¿Estás seguro? Esta acción eliminará todos tus datos.')) {
+    AppState.reset();
+    showNotification('Datos eliminados correctamente', 'success');
+    setTimeout(() => router.navigate('#/'), 1000);
+  }
+}
+
+function attachSettingsEvents() {
+  document.querySelectorAll('.settings-option input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      if (e.target === document.getElementById('dark-mode-toggle')) {
+        toggleTheme();
+      }
+    });
+  });
+}
+
+// Agregar a window
+if (!window.Views) window.Views = {};
+window.Views.settings = Views.settings;

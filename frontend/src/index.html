@@ -1,81 +1,78 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Portfolio Tracker - Professional Investment Portfolio Management">
-    <title>Portfolio Tracker v2.0</title>
-    
-    <!-- CSS Global -->
-    <link rel="stylesheet" href="assets/styles/main.css">
-    <link rel="stylesheet" href="assets/styles/layout.css">
-    <link rel="stylesheet" href="assets/styles/utilities.css">
-    
-    <!-- Chart.js (para futuras vistas de analytics) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio Tracker v2.0</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/styles/main.css">
+  <link rel="stylesheet" href="assets/styles/layout.css">
+  <link rel="stylesheet" href="assets/styles/utilities.css">
 </head>
 <body data-color-scheme="light">
-    <!-- Navigation Layout -->
-    <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <aside id="sidebar" class="sidebar"></aside>
-        
-        <!-- Main Content Area -->
-        <div class="main-wrapper">
-            <!-- Top Navbar -->
-            <nav id="navbar" class="navbar"></nav>
-            
-            <!-- Page Content -->
-            <main id="main-content" class="main-content">
-                <!-- Views serán renderizadas aquí por el router -->
-                <div id="app-view" class="page-container">
-                    <!-- Contenido dinámico -->
-                </div>
-            </main>
+  <!-- App Container -->
+  <div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar"></div>
+    
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+      <!-- Navbar -->
+      <div class="navbar" id="navbar"></div>
+      
+      <!-- Main Content -->
+      <main class="main-content" id="main-content">
+        <div class="loader">
+          <div class="loader-spinner"></div>
+          <div class="loader-text">Cargando...</div>
         </div>
+      </main>
     </div>
+  </div>
 
-    <!-- Modal Container -->
-    <div id="modal-container" class="modal-container"></div>
+  <!-- Notification Container -->
+  <div id="notification-container"></div>
 
-    <!-- Notification Container -->
-    <div id="notification-container" class="notification-container"></div>
-
-    <!-- Scripts en orden correcto -->
-    <!-- Utilities primero -->
-    <script src="js/utils/storage.js"></script>
-    <script src="js/utils/validators.js"></script>
-    <script src="js/utils/formatters.js"></script>
-    <script src="js/utils/theme.js"></script>
-    
-    <!-- API Client -->
-    <script src="js/api/index.js"></script>
-    
-    <!-- Components principales -->
-    <script src="js/components/sidebar.js"></script>
-    <script src="js/components/navbar.js"></script>
-    <script src="js/components/card.js"></script>
-    <script src="js/components/modal.js"></script>
-    <script src="js/components/notifications.js"></script>
-    <script src="js/components/button.js"></script>
-    <script src="js/components/input.js"></script>
-    <script src="js/components/table.js"></script>
-    <script src="js/components/chart.js"></script>
-    <script src="js/components/form.js"></script>
-    <script src="js/components/loader.js"></script>
-    <script src="js/components/badge.js"></script>
-    
-    <!-- Views -->
-    <script src="js/views/dashboard.js"></script>
-    <script src="js/views/positions.js"></script>
-    <script src="js/views/analytics.js"></script>
-    <script src="js/views/education.js"></script>
-    
-    <!-- App Main (router + initialization) -->
-    <script src="js/config.js"></script>
-    <script src="js/app.js"></script>
-    
-    <!-- INIT: Monta componentes y arranca la app (DEBE SER ÚTLTIMO) -->
-    <script src="js/init.js"></script>
+  <!-- Scripts en orden -->
+  <!-- 1. Utils y Helpers -->
+  <script src="js/utils/storage.js"></script>
+  <script src="js/utils/validators.js"></script>
+  <script src="js/utils/formatters.js"></script>
+  <script src="js/utils/theme.js"></script>
+  
+  <!-- 2. API -->
+  <script src="js/api/index.js"></script>
+  
+  <!-- 3. Components -->
+  <script src="js/components/navbar.js"></script>
+  <script src="js/components/sidebar.js"></script>
+  <script src="js/components/card.js"></script>
+  <script src="js/components/modal.js"></script>
+  <script src="js/components/notifications.js"></script>
+  <script src="js/components/button.js"></script>
+  <script src="js/components/input.js"></script>
+  <script src="js/components/table.js"></script>
+  <script src="js/components/chart.js"></script>
+  <script src="js/components/form.js"></script>
+  <script src="js/components/loader.js"></script>
+  <script src="js/components/badge.js"></script>
+  
+  <!-- 4. Views -->
+  <script src="js/views/dashboard.js"></script>
+  <script src="js/views/positions.js"></script>
+  <script src="js/views/analytics.js"></script>
+  <script src="js/views/portfolio.js"></script>
+  <script src="js/views/education.js"></script>
+  <script src="js/views/settings.js"></script>
+  
+  <!-- 5. Core (State Management) -->
+  <script src="js/config.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/app.js"></script>
+  
+  <!-- 6. Init (Last) -->
+  <script src="js/init.js"></script>
 </body>
 </html>

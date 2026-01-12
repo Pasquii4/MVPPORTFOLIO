@@ -1,65 +1,76 @@
 /**
- * Router SPA
- * Enrutador de página única
+ * Router - SPA Navigation
+ * Gestiona la navegación entre vistas
  */
+
 class Router {
   constructor() {
-    this.routes = new Map();
+    this.routes = {};
     this.currentRoute = null;
+    this.init();
   }
 
-  /**
-   * Registrar una ruta
-   * @param {string} path - Ruta (ej: '/', '/positions')
-   * @param {Function} handler - Función que renderiza la vista
-   */
+  // Inicializar router
+  init() {
+    window.addEventListener('hashchange', () => this.handleRouteChange());
+    window.addEventListener('load', () => this.handleRouteChange());
+  }
+
+  // Registrar ruta
   register(path, handler) {
-    this.routes.set(path, handler);
+    this.routes[path] = handler;
   }
 
-  /**
-   * Navegar a una ruta
-   * @param {string} path - Ruta a navegar
-   */
+  // Navegar a ruta
   navigate(path) {
-    if (!path.startsWith('#')) {
-      path = '#' + path;
-    }
     window.location.hash = path;
   }
 
-  /**
-   * Obtener ruta actual del hash
-   */
-  getCurrentRoute() {
+  // Manejar cambio de ruta
+  handleRouteChange() {
     const hash = window.location.hash.slice(1) || '/';
-    return hash.startsWith('/') ? hash : '/' + hash;
-  }
-
-  /**
-   * Ejecutar
-   */
-  handleRoute() {
-    const path = this.getCurrentRoute();
-    const route = this.routes.get(path) || this.routes.get('/');
-
-    if (route && typeof route === 'function') {
-      try {
-        route();
-        this.currentRoute = path;
-      } catch (error) {
-        console.error('Error al renderizar ruta:', error);
-        Notifications.error('Error al cargar la página');
+    const path = hash.split('?')[0];
+    
+    // Normalizar rutas
+    const normalizedPath = path === '/dashboard' ? '/' : path;
+    
+    const handler = this.routes[normalizedPath] || this.routes['/'];
+    
+    if (handler && typeof handler === 'function') {
+      this.currentRoute = normalizedPath;
+      
+      // Obtener contenedor
+      const mainContent = document.getElementById('main-content');
+      if (mainContent) {
+        mainContent.innerHTML = '';
+        handler();
       }
+
+      // Actualizar navegación
+      this.updateActiveNav(normalizedPath);
+    } else {
+      console.warn(`Ruta no encontrada: ${normalizedPath}`);
     }
   }
 
-  /**
-   * Inicializar router con listeners
-   */
-  init() {
-    window.addEventListener('hashchange', () => this.handleRoute());
-    this.handleRoute();
+  // Actualizar navegación activa
+  updateActiveNav(path) {
+    // Remover clase active de todos
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.classList.remove('active');
+    });
+    
+    // Agregar a la ruta actual
+    const normalizedForNav = path === '/' ? 'dashboard' : path.slice(1);
+    const activeLink = document.querySelector(`[data-route="${path}"], [data-route="#${path}"]`);
+    if (activeLink) {
+      activeLink.classList.add('active');
+    }
+  }
+
+  // Obtener ruta actual
+  getCurrentRoute() {
+    return this.currentRoute;
   }
 }
 

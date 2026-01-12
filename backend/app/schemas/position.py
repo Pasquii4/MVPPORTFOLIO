@@ -58,6 +58,16 @@ class PositionResponse(PositionBase):
         from_attributes = True
 
 
+class ClosedPositionResponse(PositionBase):
+    """Schema de respuesta para posición cerrada"""
+    id: int
+    sell_price: float
+    sell_date: date
+
+    class Config:
+        from_attributes = True
+
+
 class SellPositionRequest(BaseModel):
     """Schema para vender posición"""
     sell_price: float = Field(..., gt=0, le=1000000)

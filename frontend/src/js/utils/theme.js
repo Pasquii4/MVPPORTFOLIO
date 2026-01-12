@@ -1,47 +1,71 @@
-// === THEME MANAGEMENT ===
-class ThemeManager {
-  constructor() {
-    this.currentTheme = localStorage.getItem('theme') || 'light';
-    this.apply();
-    console.log('✅ ThemeManager initialized');
-  }
+/**
+ * Theme Manager
+ * Gestiona temas dark/light de la aplicación
+ */
+const ThemeManager = {
+  LIGHT: 'light',
+  DARK: 'dark',
+  STORAGE_KEY: 'app_theme',
 
-  apply() {
-    if (this.currentTheme === 'dark') {
-      document.documentElement.style.colorScheme = 'dark';
-      document.body.classList.add('dark-mode');
-      document.body.classList.remove('light-mode');
-    } else {
-      document.documentElement.style.colorScheme = 'light';
-      document.body.classList.add('light-mode');
-      document.body.classList.remove('dark-mode');
+  /**
+   * Inicializar tema basado en preferencias del sistema
+   */
+  init() {
+    // Recuperar del storage o usar preferencia del sistema
+    const saved = StorageManager.get(this.STORAGE_KEY);
+    let theme = saved;
+    
+    if (!theme) {
+      // Detectar preferencia del sistema
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      theme = prefersDark ? this.DARK : this.LIGHT;
     }
+    
+    this.set(theme);
+  },
 
-    localStorage.setItem('theme', this.currentTheme);
-  }
-
-  toggle() {
-    this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-    this.apply();
-    this.notifyChange();
-  }
-
-  set(theme) {
-    if (['light', 'dark', 'auto'].includes(theme)) {
-      this.currentTheme = theme;
-      this.apply();
-      this.notifyChange();
-    }
-  }
-
+  /**
+   * Obtener tema actual
+   * @returns {string} Tema actual ('light' o 'dark')
+   */
   get() {
-    return this.currentTheme;
-  }
+    return document.documentElement.getAttribute('data-color-scheme') || this.LIGHT;
+  },
 
-  notifyChange() {
-    const event = new CustomEvent('theme-changed', { detail: { theme: this.currentTheme } });
+  /**
+   * Establecer tema
+   * @param {string} theme - Tema a establecer ('light' o 'dark')
+   */
+  set(theme) {
+    if (![this.LIGHT, this.DARK].includes(theme)) {
+      console.warn(`Tema inválido: ${theme}. Usando 'light'`);
+      theme = this.LIGHT;
+    }
+
+    document.documentElement.setAttribute('data-color-scheme', theme);
+    StorageManager.set(this.STORAGE_KEY, theme);
+    
+    // Disparar evento de cambio
+    const event = new CustomEvent('themeChanged', { detail: { theme } });
     document.dispatchEvent(event);
-  }
-}
+  },
 
-window.themeManager = new ThemeManager();
+  /**
+   * Toggle entre temas
+   */
+  toggle() {
+    const current = this.get();
+    const next = current === this.LIGHT ? this.DARK : this.LIGHT;
+    this.set(next);
+    return next;
+  },
+
+  /**
+   * Obtener variable CSS del tema actual
+   * @param {string} varName - Nombre de la variable
+   * @returns {string} Valor de la variable
+   */
+  getVar(varName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  }
+};

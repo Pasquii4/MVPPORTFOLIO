@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Portfolio Tracker - Gestiona tu cartera de inversiones">
+    <meta name="theme-color" content="#1f2937">
+    
+    <title>Portfolio Tracker</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Estilos locales -->
+    <link rel="stylesheet" href="assets/styles/main.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <div id="app">
+        <!-- Barra lateral -->
+        <nav id="sidebar" class="fixed left-0 top-0 h-screen w-64 bg-gray-800 border-r border-gray-700 flex flex-col shadow-lg">
+            <!-- Logo -->
+            <div class="p-6 border-b border-gray-700">
+                <h1 class="text-2xl font-bold text-primary">📊 Portfolio</h1>
+                <p class="text-xs text-gray-400 mt-1">v1.0.0</p>
+            </div>
+            
+            <!-- Menu -->
+            <ul class="flex-1 overflow-y-auto py-4">
+                <li><a href="#/" class="nav-link py-3 px-6 border-l-4 border-transparent hover:bg-gray-700 transition">🏠 Dashboard</a></li>
+                <li><a href="#/positions" class="nav-link py-3 px-6 border-l-4 border-transparent hover:bg-gray-700 transition">💼 Posiciones</a></li>
+                <li><a href="#/analytics" class="nav-link py-3 px-6 border-l-4 border-transparent hover:bg-gray-700 transition">📈 Analytics</a></li>
+                <li><a href="#/closed" class="nav-link py-3 px-6 border-l-4 border-transparent hover:bg-gray-700 transition">🏁 Cerradas</a></li>
+                <li><a href="#/education" class="nav-link py-3 px-6 border-l-4 border-transparent hover:bg-gray-700 transition">📚 Educación</a></li>
+                <li><a href="#/settings" class="nav-link py-3 px-6 border-l-4 border-transparent hover:bg-gray-700 transition">⚙️ Configuración</a></li>
+            </ul>
+            
+            <!-- Footer -->
+            <div class="p-6 border-t border-gray-700 text-xs text-gray-400">
+                <p>🚀 Hecho con ❤️</p>
+            </div>
+        </nav>
+        
+        <!-- Contenido principal -->
+        <main class="ml-64 min-h-screen">
+            <!-- Top bar -->
+            <header class="bg-gray-800 border-b border-gray-700 px-8 py-6 flex justify-between items-center shadow">
+                <h2 id="page-title" class="text-3xl font-bold">Dashboard</h2>
+                <div class="flex gap-4">
+                    <button id="btn-refresh" class="px-4 py-2 bg-primary hover:bg-blue-600 rounded text-sm font-medium transition">🔄 Actualizar</button>
+                    <button id="btn-export" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm font-medium transition">📥 Exportar</button>
+                </div>
+            </header>
+            
+            <!-- Contenedor páginas -->
+            <div id="content" class="p-8">
+                <!-- Se renderiza dinámicamente -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-container"></div>
+
+    <!-- Toast notifications -->
+    <div id="toast-container" class="fixed top-6 right-6 z-50 space-y-3"></div>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
+        <div class="bg-gray-800 p-8 rounded-lg">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p class="mt-4 text-center text-gray-300">Cargando...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils/format.js"></script>
+    <script src="js/utils/storage.js"></script>
+    <script src="js/utils/validators.js"></script>
+    <script src="js/api/client.js"></script>
+    <script src="js/api/positions.js"></script>
+    <script src="js/api/portfolio.js"></script>
+    <script src="js/components/modal.js"></script>
+    <script src="js/components/notification.js"></script>
+    <script src="js/components/table.js"></script>
+    <script src="js/components/chart.js"></script>
+    <script src="js/views/dashboard.js"></script>
+    <script src="js/views/positions.js"></script>
+    <script src="js/views/analytics.js"></script>
+    <script src="js/views/education.js"></script>
+    <script src="js/views/closed.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

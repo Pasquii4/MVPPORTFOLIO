@@ -1,0 +1,13 @@
+{
+  "name": "portfolio-tracker",
+  "version": "1.0.0",
+  "description": "Portfolio Tracker - Gestiona tu cartera de inversiones",
+  "main": "src/js/app.js",
+  "scripts": {
+    "serve": "python -m http.server 8001",
+    "dev": "python -m http.server 8001"
+  },
+  "keywords": ["portfolio", "trading", "investments"],
+  "author": "Pasquii",
+  "license": "MIT"
+}

@@ -1,97 +1,61 @@
 /**
  * Analytics View
- * Gráficos y análisis
  */
+
+const Views = window.Views || {};
+
 Views.analytics = function() {
-  const container = document.getElementById('app-view');
-  container.innerHTML = '';
-  
-  const title = document.createElement('h1');
-  title.className = 'page-title';
-  title.textContent = '📉 Analytics';
-  container.appendChild(title);
-  
-  // Gráfico de rendimiento
-  const chartSection = document.createElement('section');
-  chartSection.className = 'analytics-section';
-  
-  const chartTitle = document.createElement('h2');
-  chartTitle.textContent = 'Rendimiento del Portfolio';
-  chartSection.appendChild(chartTitle);
-  
-  const lineChart = ChartComponent.createLineChart({
-    title: 'Valor del Portfolio (Últimos 30 días)',
-    labels: [
-      'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom',
-      'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'
-    ],
-    datasets: [
-      {
-        label: 'Valor Portfolio',
-        data: [16000, 16500, 16800, 16200, 17000, 17500, 18000,
-                18200, 18500, 18100, 18800, 19000, 18600, 18500]
-      }
-    ]
-  });
-  
-  chartSection.appendChild(lineChart);
-  container.appendChild(chartSection);
-  
-  // Distribución por sector
-  const distSection = document.createElement('section');
-  distSection.className = 'analytics-section';
-  
-  const distTitle = document.createElement('h2');
-  distTitle.textContent = 'Distribución del Portfolio';
-  distSection.appendChild(distTitle);
-  
-  const pieChart = ChartComponent.createPieChart({
-    title: 'Por Sector',
-    labels: ['Tecnología', 'Finanzas', 'Salud', 'Energía'],
-    data: [45, 25, 20, 10]
-  });
-  
-  distSection.appendChild(pieChart);
-  container.appendChild(distSection);
-  
-  // Estadísticas
-  const statsSection = document.createElement('section');
-  statsSection.className = 'analytics-section';
-  
-  const statsTitle = document.createElement('h2');
-  statsTitle.textContent = 'Estadísticas';
-  statsSection.appendChild(statsTitle);
-  
-  const statsGrid = document.createElement('div');
-  statsGrid.className = 'stats-grid';
-  
-  const stats = [
-    { label: 'Mejor Posición', value: '+28.5%' },
-    { label: 'Peor Posición', value: '-5.2%' },
-    { label: 'Volatilidad', value: '12.3%' },
-    { label: 'Sharp Ratio', value: '1.45' }
-  ];
-  
-  stats.forEach(stat => {
-    const statCard = Card.create({
-      content: `
-        <div class="stat-item">
-          <div class="stat-label">${stat.label}</div>
-          <div class="stat-value">${stat.value}</div>
+  const mainContent = document.getElementById('main-content');
+  const portfolio = AppState.get('portfolio');
+  const positions = AppState.get('positions') || [];
+
+  const html = `
+    <div class="page-container">
+      <h1 class="page-title">📉 Análisis</h1>
+      
+      <div class="card mb-4">
+        <div class="card-header">
+          <h2 class="card-title">Evolución del Portafolio</h2>
         </div>
-      `
-    });
-    statsGrid.appendChild(statCard);
-  });
-  
-  statsSection.appendChild(statsGrid);
-  container.appendChild(statsSection);
-  
-  if (navbarComponent) {
-    navbarComponent.setTitle('📉 Analytics');
-  }
-  
-  if (sidebarComponent) {
-    sidebarComponent.updateActive('analytics');
-  }
+        <div class="card-body">
+          <div class="chart-container">
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--color-text-secondary);">
+              <div style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                <p>Gráfico en desarrollo</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="card stat-card">
+          <div class="stat-label">Posiciones Activas</div>
+          <div class="stat-value">${positions.length}</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Valor Total</div>
+          <div class="stat-value">${Formatters.currency(portfolio.currentValue)}</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Rentabilidad</div>
+          <div class="stat-value trend-${portfolio.totalGainPercent >= 0 ? 'positive' : 'negative'}">
+            ${Formatters.percent(portfolio.totalGainPercent)}%
+          </div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Ganancias</div>
+          <div class="stat-value trend-${portfolio.totalGain >= 0 ? 'positive' : 'negative'}">
+            ${Formatters.currency(portfolio.totalGain)}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  mainContent.innerHTML = html;
 };
+
+if (!window.Views) window.Views = {};
+window.Views.analytics = Views.analytics;

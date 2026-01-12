@@ -1,80 +1,62 @@
 /**
  * Storage Manager
- * Gestiona persistencia de datos en localStorage
+ * Gestiona el almacenamiento en localStorage
  */
+
 const StorageManager = {
-  /**
-   * Guardar datos
-   * @param {string} key - Clave de almacenamiento
-   * @param {*} value - Valor a guardar (se convierte a JSON)
-   */
-  set(key, value) {
+  prefix: 'portfolio_',
+
+  // Establecer valor
+  set: function(key, value) {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      const json = JSON.stringify(value);
+      localStorage.setItem(this.prefix + key, json);
+      console.log(`💾 ${key} guardado`);
       return true;
-    } catch (error) {
-      console.error('Error al guardar en storage:', error);
+    } catch (e) {
+      console.error(`Error guardando ${key}:`, e);
       return false;
     }
   },
 
-  /**
-   * Obtener datos
-   * @param {string} key - Clave de almacenamiento
-   * @param {*} defaultValue - Valor por defecto si no existe
-   * @returns {*} Valor recuperado o default
-   */
-  get(key, defaultValue = null) {
+  // Obtener valor
+  get: function(key, defaultValue = null) {
     try {
-      const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : defaultValue;
-    } catch (error) {
-      console.error('Error al leer storage:', error);
+      const json = localStorage.getItem(this.prefix + key);
+      if (!json) return defaultValue;
+      return JSON.parse(json);
+    } catch (e) {
+      console.error(`Error obteniendo ${key}:`, e);
       return defaultValue;
     }
   },
 
-  /**
-   * Eliminar datos
-   * @param {string} key - Clave a eliminar
-   */
-  remove(key) {
+  // Eliminar valor
+  remove: function(key) {
     try {
-      localStorage.removeItem(key);
+      localStorage.removeItem(this.prefix + key);
+      console.log(`🗑️ ${key} eliminado`);
       return true;
-    } catch (error) {
-      console.error('Error al eliminar de storage:', error);
+    } catch (e) {
+      console.error(`Error eliminando ${key}:`, e);
       return false;
     }
   },
 
-  /**
-   * Limpiar todo el storage
-   */
-  clear() {
+  // Limpiar todo
+  clear: function() {
     try {
-      localStorage.clear();
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith(this.prefix)) {
+          localStorage.removeItem(key);
+        }
+      });
+      console.log('🧹 Almacenamiento limpio');
       return true;
-    } catch (error) {
-      console.error('Error al limpiar storage:', error);
+    } catch (e) {
+      console.error('Error limpiando storage:', e);
       return false;
     }
-  },
-
-  /**
-   * Verificar si una clave existe
-   * @param {string} key - Clave a verificar
-   * @returns {boolean} True si existe
-   */
-  has(key) {
-    return localStorage.getItem(key) !== null;
-  },
-
-  /**
-   * Obtener todas las claves
-   * @returns {string[]} Array de claves
-   */
-  keys() {
-    return Object.keys(localStorage);
   }
 };

@@ -1,71 +1,51 @@
 /**
  * Theme Manager
- * Gestiona temas dark/light de la aplicación
+ * Gestiona el tema de la aplicación (dark/light)
  */
-const ThemeManager = {
-  LIGHT: 'light',
-  DARK: 'dark',
-  STORAGE_KEY: 'app_theme',
 
-  /**
-   * Inicializar tema basado en preferencias del sistema
-   */
-  init() {
-    // Recuperar del storage o usar preferencia del sistema
-    const saved = StorageManager.get(this.STORAGE_KEY);
-    let theme = saved;
-    
-    if (!theme) {
-      // Detectar preferencia del sistema
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      theme = prefersDark ? this.DARK : this.LIGHT;
+const themeManager = {
+  current: 'light',
+
+  // Inicializar
+  init: function() {
+    this.current = localStorage.getItem('portfolio_theme') || 'light';
+    this.apply(this.current);
+  },
+
+  // Obtener tema actual
+  get: function() {
+    return this.current;
+  },
+
+  // Establecer tema
+  set: function(theme) {
+    if (theme === 'dark' || theme === 'light') {
+      this.current = theme;
+      this.apply(theme);
+      localStorage.setItem('portfolio_theme', theme);
+      console.log(`🎨 Tema: ${theme}`);
     }
-    
-    this.set(theme);
   },
 
-  /**
-   * Obtener tema actual
-   * @returns {string} Tema actual ('light' o 'dark')
-   */
-  get() {
-    return document.documentElement.getAttribute('data-color-scheme') || this.LIGHT;
-  },
-
-  /**
-   * Establecer tema
-   * @param {string} theme - Tema a establecer ('light' o 'dark')
-   */
-  set(theme) {
-    if (![this.LIGHT, this.DARK].includes(theme)) {
-      console.warn(`Tema inválido: ${theme}. Usando 'light'`);
-      theme = this.LIGHT;
+  // Aplicar tema
+  apply: function(theme) {
+    const html = document.documentElement;
+    if (theme === 'dark') {
+      html.setAttribute('data-color-scheme', 'dark');
+      document.body.style.colorScheme = 'dark';
+    } else {
+      html.setAttribute('data-color-scheme', 'light');
+      document.body.style.colorScheme = 'light';
     }
-
-    document.documentElement.setAttribute('data-color-scheme', theme);
-    StorageManager.set(this.STORAGE_KEY, theme);
-    
-    // Disparar evento de cambio
-    const event = new CustomEvent('themeChanged', { detail: { theme } });
-    document.dispatchEvent(event);
   },
 
-  /**
-   * Toggle entre temas
-   */
-  toggle() {
-    const current = this.get();
-    const next = current === this.LIGHT ? this.DARK : this.LIGHT;
-    this.set(next);
-    return next;
-  },
-
-  /**
-   * Obtener variable CSS del tema actual
-   * @param {string} varName - Nombre de la variable
-   * @returns {string} Valor de la variable
-   */
-  getVar(varName) {
-    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  // Toggle tema
+  toggle: function() {
+    const newTheme = this.current === 'dark' ? 'light' : 'dark';
+    this.set(newTheme);
+    return newTheme;
   }
 };
+
+// Inicializar tema
+themeManager.init();

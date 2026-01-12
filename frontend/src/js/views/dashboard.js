@@ -1,111 +1,90 @@
 /**
  * Dashboard View
- * Vista principal con KPIs y resumen
  */
-const Views = {};
+
+const Views = window.Views || {};
 
 Views.dashboard = function() {
-  const container = document.getElementById('app-view');
-  container.innerHTML = '';
-  
-  // Título
-  const title = document.createElement('h1');
-  title.className = 'page-title';
-  title.textContent = '📊 Dashboard';
-  container.appendChild(title);
-  
-  // Obtener datos del state
+  const mainContent = document.getElementById('main-content');
+  const portfolio = AppState.get('portfolio');
   const positions = AppState.get('positions') || [];
-  const portfolio = AppState.get('portfolio') || {
-    totalInvested: 15000,
-    currentValue: 18500,
-    totalGain: 3500
-  };
-  
-  const totalGainPercent = portfolio.totalInvested ? 
-    ((portfolio.totalGain / portfolio.totalInvested) * 100) : 0;
-  
-  // KPI Cards
-  const kpiContainer = document.createElement('div');
-  kpiContainer.className = 'kpi-grid';
-  
-  const kpis = [
-    {
-      label: 'Total Invertido',
-      value: Formatters.currency(portfolio.totalInvested),
-      unit: 'USD',
-      change: 0
-    },
-    {
-      label: 'Valor Actual',
-      value: Formatters.currency(portfolio.currentValue),
-      unit: 'USD',
-      change: 5
-    },
-    {
-      label: 'Ganancias',
-      value: Formatters.currency(portfolio.totalGain),
-      unit: 'USD',
-      change: totalGainPercent
-    },
-    {
-      label: 'ROI',
-      value: Formatters.percent(totalGainPercent),
-      unit: '',
-      change: totalGainPercent
-    }
-  ];
-  
-  kpis.forEach(kpi => {
-    const card = Card.createStatCard(kpi);
-    kpiContainer.appendChild(card);
-  });
-  
-  container.appendChild(kpiContainer);
-  
-  // Sección de posiciones recientes
-  const posSection = document.createElement('section');
-  posSection.className = 'dashboard-section';
-  
-  const posTitle = document.createElement('h2');
-  posTitle.textContent = 'Posiciones Recientes';
-  posSection.appendChild(posTitle);
-  
-  if (positions.length === 0) {
-    const empty = document.createElement('p');
-    empty.className = 'text-center text-muted';
-    empty.textContent = 'No hay posiciones registradas';
-    posSection.appendChild(empty);
-  } else {
-    const table = new DataTable({
-      columns: [
-        { key: 'symbol', label: 'Símbolo', sortable: true },
-        { key: 'shares', label: 'Cantidad', sortable: true },
-        { key: 'entryPrice', label: 'Entrada', sortable: true, format: (v) => Formatters.currency(v) },
-        { key: 'currentPrice', label: 'Actual', sortable: true, format: (v) => Formatters.currency(v) },
-        { key: 'gain', label: 'Ganancia', sortable: true, format: (v, row) => {
-          const gain = (row.currentPrice - row.entryPrice) * row.shares;
-          return `<span class="${gain >= 0 ? 'text-success' : 'text-error'}">
-            ${Formatters.currency(gain)}
-          </span>`;
-        }}
-      ],
-      data: positions.slice(0, 5), // Solo las últimas 5
-      paginated: false
-    });
-    
-    posSection.appendChild(table.render());
-  }
-  
-  container.appendChild(posSection);
-  
-  // Actualizar barra de navegación
-  if (navbarComponent) {
-    navbarComponent.setTitle('📊 Dashboard');
-  }
-  
-  // Actualizar sidebar
-  if (sidebarComponent) {
-    sidebarComponent.updateActive('dashboard');
-  }
+  const recentPositions = positions.slice(0, 5);
+
+  const html = `
+    <div class="page-container">
+      <h1 class="page-title">📊 Dashboard</h1>
+      
+      <!-- KPI Grid -->
+      <div class="kpi-grid">
+        <div class="card stat-card">
+          <div class="stat-label">Total Invertido</div>
+          <div class="stat-value">${Formatters.currency(portfolio.totalInvested)}</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Valor Actual</div>
+          <div class="stat-value">${Formatters.currency(portfolio.currentValue)}</div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Ganancias</div>
+          <div class="stat-value trend-${portfolio.totalGain >= 0 ? 'positive' : 'negative'}">
+            ${Formatters.currency(portfolio.totalGain)}
+          </div>
+        </div>
+        <div class="card stat-card">
+          <div class="stat-label">Retorno %</div>
+          <div class="stat-value trend-${portfolio.totalGainPercent >= 0 ? 'positive' : 'negative'}">
+            ${Formatters.percent(portfolio.totalGainPercent)}%
+          </div>
+        </div>
+      </div>
+
+      <!-- Posiciones Recientes -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h2 class="card-title">Posiciones Recientes</h2>
+        </div>
+        <div class="card-body">
+          ${recentPositions.length > 0 ? `
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Símbolo</th>
+                    <th>Entrada</th>
+                    <th>Actual</th>
+                    <th>Ganancia</th>
+                    <th>%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${recentPositions.map(pos => {
+                    const gain = (pos.current - pos.entry) * pos.quantity;
+                    const gainPercent = ((pos.current - pos.entry) / pos.entry * 100).toFixed(2);
+                    return `
+                      <tr>
+                        <td><strong>${pos.symbol}</strong></td>
+                        <td>${Formatters.currency(pos.entry)}</td>
+                        <td>${Formatters.currency(pos.current)}</td>
+                        <td class="trend-${gain >= 0 ? 'positive' : 'negative'}">${Formatters.currency(gain)}</td>
+                        <td class="trend-${gainPercent >= 0 ? 'positive' : 'negative'}">${gainPercent}%</td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : `
+            <p style="text-align: center; color: var(--color-text-secondary);">
+              No hay posiciones aún. <a href="#/positions" style="color: var(--color-accent);">Crear una</a>
+            </p>
+          `}
+        </div>
+      </div>
+    </div>
+  `;
+
+  mainContent.innerHTML = html;
 };
+
+if (!window.Views) window.Views = {};
+window.Views.dashboard = Views.dashboard;

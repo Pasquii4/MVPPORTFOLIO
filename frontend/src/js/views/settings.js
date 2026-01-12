@@ -2,9 +2,9 @@
  * Settings View
  */
 
-const Views = window.Views || {};
+window.Views = window.Views || {};
 
-Views.settings = function() {
+window.Views.settings = function() {
   const mainContent = document.getElementById('main-content');
   const user = AppState.get('user') || { name: 'Usuario', email: 'user@example.com', joinDate: new Date() };
   const currentTheme = AppState.get('theme') || 'light';
@@ -112,6 +112,3 @@ Views.settings = function() {
     }
   }, 0);
 };
-
-if (!window.Views) window.Views = {};
-window.Views.settings = Views.settings;

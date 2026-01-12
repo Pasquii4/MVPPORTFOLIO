@@ -2,9 +2,9 @@
  * Education View
  */
 
-const Views = window.Views || {};
+window.Views = window.Views || {};
 
-Views.education = function() {
+window.Views.education = function() {
   const mainContent = document.getElementById('main-content');
 
   const html = `
@@ -73,6 +73,3 @@ Views.education = function() {
 
   mainContent.innerHTML = html;
 };
-
-if (!window.Views) window.Views = {};
-window.Views.education = Views.education;

@@ -2,9 +2,9 @@
  * Dashboard View
  */
 
-const Views = window.Views || {};
+window.Views = window.Views || {};
 
-Views.dashboard = function() {
+window.Views.dashboard = function() {
   const mainContent = document.getElementById('main-content');
   const portfolio = AppState.get('portfolio') || {};
   const positions = AppState.get('positions') || [];
@@ -94,6 +94,3 @@ Views.dashboard = function() {
 
   mainContent.innerHTML = html;
 };
-
-if (!window.Views) window.Views = {};
-window.Views.dashboard = Views.dashboard;

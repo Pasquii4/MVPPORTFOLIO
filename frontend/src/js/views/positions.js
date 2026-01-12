@@ -2,9 +2,9 @@
  * Positions View
  */
 
-const Views = window.Views || {};
+window.Views = window.Views || {};
 
-Views.positions = function() {
+window.Views.positions = function() {
   const mainContent = document.getElementById('main-content');
   const positions = AppState.get('positions') || [];
 
@@ -80,7 +80,7 @@ window.deletePosition = function(id) {
     const positions = AppState.get('positions') || [];
     const filtered = positions.filter(p => p.id !== id);
     AppState.set('positions', filtered);
-    Views.positions();
+    window.Views.positions();
     showNotification('Posición eliminada', 'success');
   }
 };
@@ -88,6 +88,3 @@ window.deletePosition = function(id) {
 window.editPosition = function(id) {
   showNotification('Función de editar en desarrollo', 'info');
 };
-
-if (!window.Views) window.Views = {};
-window.Views.positions = Views.positions;

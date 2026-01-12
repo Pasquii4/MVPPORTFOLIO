@@ -2,9 +2,9 @@
  * Portfolio View
  */
 
-const Views = window.Views || {};
+window.Views = window.Views || {};
 
-Views.portfolio = function() {
+window.Views.portfolio = function() {
   const mainContent = document.getElementById('main-content');
   const portfolio = AppState.get('portfolio') || {};
   const positions = AppState.get('positions') || [];
@@ -74,6 +74,3 @@ Views.portfolio = function() {
 
   mainContent.innerHTML = html;
 };
-
-if (!window.Views) window.Views = {};
-window.Views.portfolio = Views.portfolio;

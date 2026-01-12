@@ -2,9 +2,9 @@
  * Analytics View
  */
 
-const Views = window.Views || {};
+window.Views = window.Views || {};
 
-Views.analytics = function() {
+window.Views.analytics = function() {
   const mainContent = document.getElementById('main-content');
   const portfolio = AppState.get('portfolio') || {};
 
@@ -57,6 +57,3 @@ Views.analytics = function() {
 
   mainContent.innerHTML = html;
 };
-
-if (!window.Views) window.Views = {};
-window.Views.analytics = Views.analytics;

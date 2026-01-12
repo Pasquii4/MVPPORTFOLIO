@@ -1,113 +1,119 @@
 /**
- * Init - Application Bootstrap
- * Inicializa la aplicación cargando componentes y vistas
+ * Application Initialization
+ * Loads all modules and starts the application
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 Iniciando Portfolio Tracker v2.0...');
+document.addEventListener('DOMContentLoaded', async () => {
+  console.clear();
+  console.log('🚀 Initializing Portfolio Tracker...');
 
-  // Pequeña pausa para asegurar que todos los scripts están cargados
-  setTimeout(function() {
-    // Verificar que todas las dependencias están cargadas
-    const dependencies = [
-      { name: 'Config', check: () => typeof Config !== 'undefined' },
-      { name: 'Formatters', check: () => typeof Formatters !== 'undefined' },
-      { name: 'Validators', check: () => typeof Validators !== 'undefined' },
-      { name: 'StorageManager', check: () => typeof StorageManager !== 'undefined' },
-      { name: 'themeManager', check: () => typeof themeManager !== 'undefined' },
-      { name: 'AppState', check: () => typeof AppState !== 'undefined' },
-      { name: 'renderSidebar', check: () => typeof renderSidebar === 'function' },
-      { name: 'renderNavbar', check: () => typeof renderNavbar === 'function' },
-      { name: 'router', check: () => typeof router !== 'undefined' }
-    ];
+  // Step 1: Initialize Database
+  console.log('📦 Loading database...');
+  if (window.DatabaseManager) {
+    DatabaseManager.init();
+  } else {
+    console.error('❌ DatabaseManager not loaded');
+    return;
+  }
 
-    let allLoaded = true;
-    const missingDeps = [];
-    
-    dependencies.forEach(dep => {
-      if (dep.check()) {
-        console.log(`✅ ${dep.name} cargado`);
-      } else {
-        console.error(`❌ ${dep.name} NO cargado`);
-        allLoaded = false;
-        missingDeps.push(dep.name);
-      }
+  // Step 2: Load initial state from database
+  console.log('📊 Loading data...');
+  try {
+    const positions = DatabaseManager.getPositions();
+    const portfolio = DatabaseManager.getPortfolio();
+    const user = DatabaseManager.getUser();
+    const settings = DatabaseManager.getSettings();
+
+    AppState.set('positions', positions);
+    AppState.set('portfolio', portfolio);
+    AppState.set('user', user);
+    AppState.set('theme', settings.theme);
+    AppState.set('settings', settings);
+
+    console.log(`✅ Loaded ${positions.length} positions`);
+  } catch (error) {
+    console.error('❌ Error loading data:', error);
+  }
+
+  // Step 3: Apply theme
+  console.log('🎨 Applying theme...');
+  const theme = AppState.get('theme') || 'light';
+  themeManager.set(theme);
+
+  // Step 4: Render static components
+  console.log('🎯 Rendering components...');
+  try {
+    renderNavbar();
+    renderSidebar();
+  } catch (error) {
+    console.error('❌ Error rendering components:', error);
+  }
+
+  // Step 5: Initialize router
+  console.log('🛣️ Initializing router...');
+  try {
+    const router = new Router();
+    router.registerRoute('/', Views.dashboard);
+    router.registerRoute('/dashboard', Views.dashboard);
+    router.registerRoute('/positions', Views.positions);
+    router.registerRoute('/analytics', Views.analytics);
+    router.registerRoute('/portfolio', Views.portfolio);
+    router.registerRoute('/education', Views.education);
+    router.registerRoute('/settings', Views.settings);
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', () => {
+      router.navigate(window.location.hash.slice(1));
     });
 
-    if (!allLoaded) {
-      console.error('❌ Dependencias faltantes:', missingDeps);
-      document.getElementById('main-content').innerHTML = `<div style="padding: 20px; color: red;">Error: Faltan dependencias: ${missingDeps.join(', ')}</div>`;
-      return;
-    }
+    // Navigate to initial route
+    const initialRoute = window.location.hash.slice(1) || '/';
+    router.navigate(initialRoute);
 
-    console.log('✅ Todas las dependencias cargadas correctamente');
+    console.log('✅ Router initialized');
+  } catch (error) {
+    console.error('❌ Error initializing router:', error);
+  }
 
-    // Inicializar tema
-    try {
-      const savedTheme = StorageManager.get('theme', 'light');
-      themeManager.set(savedTheme);
-      console.log(`🎨 Tema aplicado: ${savedTheme}`);
-    } catch (e) {
-      console.error('Error al aplicar tema:', e);
-    }
+  // Step 6: Setup event listeners
+  console.log('📡 Setting up listeners...');
+  setupEventListeners();
 
-    // Inicializar state
-    try {
-      const savedPositions = StorageManager.get('positions');
-      if (savedPositions && Array.isArray(savedPositions)) {
-        AppState.data.positions = savedPositions;
-        AppState.recalculatePortfolio();
-        console.log(`📊 ${savedPositions.length} posiciones cargadas`);
-      }
-    } catch (e) {
-      console.error('Error al cargar posiciones:', e);
-    }
-
-    // Renderizar componentes fijos
-    try {
-      renderSidebar();
-      console.log('✅ Sidebar renderizado');
-    } catch (e) {
-      console.error('Error en sidebar:', e);
-    }
-
-    try {
-      renderNavbar();
-      console.log('✅ Navbar renderizado');
-    } catch (e) {
-      console.error('Error en navbar:', e);
-    }
-
-    // Registrar todas las rutas
-    try {
-      if (typeof Views === 'undefined') {
-        console.warn('⚠️ Views no está definido, creando objeto vacío');
-        window.Views = {};
-      }
-
-      // Esperar un poco para que todas las vistas se carguen
-      setTimeout(() => {
-        router.register('/', Views.dashboard || function() { document.getElementById('main-content').innerHTML = '<p>Dashboard no cargado</p>'; });
-        router.register('/dashboard', Views.dashboard || function() {});
-        router.register('/positions', Views.positions || function() {});
-        router.register('/analytics', Views.analytics || function() {});
-        router.register('/portfolio', Views.portfolio || function() {});
-        router.register('/education', Views.education || function() {});
-        router.register('/settings', Views.settings || function() {});
-        
-        console.log('✅ Rutas registradas');
-
-        // Navegar a dashboard por defecto
-        if (!window.location.hash) {
-          window.location.hash = '#/';
-        } else {
-          router.handleRouteChange();
-        }
-        
-        console.log('✅ Aplicación iniciada correctamente');
-      }, 100);
-    } catch (e) {
-      console.error('Error registrando rutas:', e);
-    }
-  }, 800);
+  console.log('✨ Application ready!');
+  console.log('📚 Commands: AppState.get(), DatabaseManager.getPositions(), router.navigate()');
 });
+
+// Global event listeners
+function setupEventListeners() {
+  // Sidebar navigation
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('nav-link')) {
+      e.preventDefault();
+      const href = e.target.getAttribute('href');
+      window.location.hash = href;
+    }
+  });
+}
+
+// Global helper to refresh data from database
+window.refreshData = () => {
+  console.log('🔄 Refreshing data...');
+  const positions = DatabaseManager.getPositions();
+  const portfolio = DatabaseManager.getPortfolio();
+  AppState.set('positions', positions);
+  AppState.set('portfolio', portfolio);
+  console.log('✅ Data refreshed');
+};
+
+// Global notification helper
+window.showNotification = (message, type = 'info') => {
+  console.log(`[${type.toUpperCase()}] ${message}`);
+  // Trigger notification component if exists
+  try {
+    if (window.Notifications) {
+      Notifications.show(message, type);
+    }
+  } catch (e) {
+    // Notifications component may not be loaded
+  }
+};

@@ -1,86 +1,65 @@
-// === STATE MANAGEMENT ===
-class AppState {
-  constructor() {
-    this.state = {
-      positions: [],
-      portfolio: {
-        totalInvested: 0,
-        currentValue: 0,
-        profit: 0,
-        profitPercent: 0
-      },
-      theme: localStorage.getItem('theme') || 'light',
-      user: {
-        name: 'Trader',
-        email: ''
-      },
-      filters: {
-        positionStatus: 'all',
-        searchTerm: ''
+/**
+ * App State Management
+ * Gestión centralizada del estado
+ */
+const AppState = (() => {
+  const state = {
+    positions: [
+      { symbol: 'AAPL', shares: 10, entryPrice: 150, currentPrice: 175 },
+      { symbol: 'MSFT', shares: 5, entryPrice: 300, currentPrice: 380 },
+      { symbol: 'GOOGL', shares: 3, entryPrice: 2800, currentPrice: 3100 }
+    ],
+    portfolio: {
+      totalInvested: 15000,
+      currentValue: 18500,
+      totalGain: 3500
+    },
+    user: {
+      name: 'Usuario',
+      email: 'usuario@example.com'
+    },
+    theme: 'light',
+    filters: {}
+  };
+
+  // Recuperar del storage
+  const saved = StorageManager.get('appState');
+  if (saved) {
+    Object.assign(state, saved);
+  }
+
+  return {
+    get(key, defaultValue = null) {
+      return key ? (state[key] !== undefined ? state[key] : defaultValue) : state;
+    },
+
+    set(key, value) {
+      state[key] = value;
+      this.save();
+      const event = new CustomEvent('stateChanged', { detail: { key, value } });
+      document.dispatchEvent(event);
+    },
+
+    update(key, updates) {
+      if (typeof state[key] === 'object' && state[key] !== null) {
+        state[key] = { ...state[key], ...updates };
+      } else {
+        state[key] = updates;
       }
-    };
+      this.save();
+      const event = new CustomEvent('stateChanged', { detail: { key, value: state[key] } });
+      document.dispatchEvent(event);
+    },
 
-    this.listeners = {};
-    console.log('✅ AppState initialized');
-  }
+    save() {
+      StorageManager.set('appState', state);
+    },
 
-  subscribe(key, callback) {
-    if (!this.listeners[key]) {
-      this.listeners[key] = [];
+    reset() {
+      Object.keys(state).forEach(key => {
+        state[key] = null;
+      });
+      this.save();
     }
-    this.listeners[key].push(callback);
-  }
-
-  set(key, value) {
-    if (this.state[key] !== value) {
-      this.state[key] = value;
-      this.notifyListeners(key);
-    }
-  }
-
-  get(key) {
-    return this.state[key];
-  }
-
-  notifyListeners(key) {
-    if (this.listeners[key]) {
-      this.listeners[key].forEach(callback => callback(this.state[key]));
-    }
-  }
-
-  updatePortfolio(positions) {
-    let totalInvested = 0;
-    let currentValue = 0;
-
-    positions.forEach(pos => {
-      totalInvested += pos.quantity * pos.buyPrice;
-      currentValue += pos.quantity * (pos.currentPrice || pos.buyPrice);
-    });
-
-    const profit = currentValue - totalInvested;
-    const profitPercent = (profit / totalInvested * 100) || 0;
-
-    this.state.portfolio = {
-      totalInvested,
-      currentValue,
-      profit,
-      profitPercent: profitPercent.toFixed(2)
-    };
-
-    this.notifyListeners('portfolio');
-  }
-
-  addPosition(position) {
-    this.state.positions.push(position);
-    this.updatePortfolio(this.state.positions);
-    this.notifyListeners('positions');
-  }
-
-  removePosition(ticker) {
-    this.state.positions = this.state.positions.filter(p => p.ticker !== ticker);
-    this.updatePortfolio(this.state.positions);
-    this.notifyListeners('positions');
-  }
-}
-
-window.appState = new AppState();
+  };
+})();

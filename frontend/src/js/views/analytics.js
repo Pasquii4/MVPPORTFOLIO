@@ -1,60 +1,97 @@
 /**
- * Vista Analytics
+ * Analytics View
+ * Gráficos y análisis
  */
-
-async function renderAnalyticsView(data) {
-    const content = document.getElementById('content');
-    content.innerHTML = `
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                <h3 class="text-lg font-bold mb-4">📈 Tipo de posición</h3>
-                <canvas id="types-chart" style="max-height: 300px;"></canvas>
-            </div>
-            <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                <h3 class="text-lg font-bold mb-4">📊 Rentabilidad</h3>
-                <canvas id="profitability-chart" style="max-height: 300px;"></canvas>
-            </div>
+Views.analytics = function() {
+  const container = document.getElementById('app-view');
+  container.innerHTML = '';
+  
+  const title = document.createElement('h1');
+  title.className = 'page-title';
+  title.textContent = '📉 Analytics';
+  container.appendChild(title);
+  
+  // Gráfico de rendimiento
+  const chartSection = document.createElement('section');
+  chartSection.className = 'analytics-section';
+  
+  const chartTitle = document.createElement('h2');
+  chartTitle.textContent = 'Rendimiento del Portfolio';
+  chartSection.appendChild(chartTitle);
+  
+  const lineChart = ChartComponent.createLineChart({
+    title: 'Valor del Portfolio (Últimos 30 días)',
+    labels: [
+      'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom',
+      'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'
+    ],
+    datasets: [
+      {
+        label: 'Valor Portfolio',
+        data: [16000, 16500, 16800, 16200, 17000, 17500, 18000,
+                18200, 18500, 18100, 18800, 19000, 18600, 18500]
+      }
+    ]
+  });
+  
+  chartSection.appendChild(lineChart);
+  container.appendChild(chartSection);
+  
+  // Distribución por sector
+  const distSection = document.createElement('section');
+  distSection.className = 'analytics-section';
+  
+  const distTitle = document.createElement('h2');
+  distTitle.textContent = 'Distribución del Portfolio';
+  distSection.appendChild(distTitle);
+  
+  const pieChart = ChartComponent.createPieChart({
+    title: 'Por Sector',
+    labels: ['Tecnología', 'Finanzas', 'Salud', 'Energía'],
+    data: [45, 25, 20, 10]
+  });
+  
+  distSection.appendChild(pieChart);
+  container.appendChild(distSection);
+  
+  // Estadísticas
+  const statsSection = document.createElement('section');
+  statsSection.className = 'analytics-section';
+  
+  const statsTitle = document.createElement('h2');
+  statsTitle.textContent = 'Estadísticas';
+  statsSection.appendChild(statsTitle);
+  
+  const statsGrid = document.createElement('div');
+  statsGrid.className = 'stats-grid';
+  
+  const stats = [
+    { label: 'Mejor Posición', value: '+28.5%' },
+    { label: 'Peor Posición', value: '-5.2%' },
+    { label: 'Volatilidad', value: '12.3%' },
+    { label: 'Sharp Ratio', value: '1.45' }
+  ];
+  
+  stats.forEach(stat => {
+    const statCard = Card.create({
+      content: `
+        <div class="stat-item">
+          <div class="stat-label">${stat.label}</div>
+          <div class="stat-value">${stat.value}</div>
         </div>
-
-        <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
-            <h3 class="text-lg font-bold mb-4">🌟 Top 10 mejor rendimiento</h3>
-            <div class="overflow-x-auto">
-                ${createTable(
-                    [
-                        { label: 'Ticker', key: 'ticker' },
-                        { label: 'Rentabilidad', key: 'pl_percentage', render: (r) => `<span class="${Formatter.colorClass(r.pl_percentage)}">${Formatter.percent(r.pl_percentage / 100)}</span>` },
-                        { label: 'P&L', key: 'total_pl', render: (r) => `<span class="${Formatter.colorClass(r.total_pl)}">${Formatter.money(r.total_pl)}</span>` },
-                    ],
-                    (data.positions || []).sort((a, b) => b.pl_percentage - a.pl_percentage).slice(0, 10)
-                )}
-            </div>
-        </div>
-    `;
-
-    // Gráficos
-    try {
-        const positions = data.positions || [];
-        
-        // Por tipos
-        const typeMap = {};
-        positions.forEach(p => {
-            typeMap[p.position_type] = (typeMap[p.position_type] || 0) + p.current_value;
-        });
-        const types = Object.keys(typeMap);
-        const typeValues = Object.values(typeMap);
-        createPieChart('types-chart', types, typeValues);
-
-        // Rentabilidad
-        const topPositions = positions.sort((a, b) => b.pl_percentage - a.pl_percentage).slice(0, 10);
-        createBarChart('profitability-chart', 
-            topPositions.map(p => p.ticker),
-            [{
-                label: 'Rentabilidad %',
-                data: topPositions.map(p => p.pl_percentage),
-                backgroundColor: topPositions.map(p => p.pl_percentage > 0 ? '#10b981' : '#ef4444'),
-            }]
-        );
-    } catch (e) {
-        console.error('Error rendering charts:', e);
-    }
-}
+      `
+    });
+    statsGrid.appendChild(statCard);
+  });
+  
+  statsSection.appendChild(statsGrid);
+  container.appendChild(statsSection);
+  
+  if (navbarComponent) {
+    navbarComponent.setTitle('📉 Analytics');
+  }
+  
+  if (sidebarComponent) {
+    sidebarComponent.updateActive('analytics');
+  }
+};

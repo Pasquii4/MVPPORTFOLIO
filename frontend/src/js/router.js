@@ -1,61 +1,67 @@
-// === ROUTER SYSTEM ===
+/**
+ * Router SPA
+ * Enrutador de página única
+ */
 class Router {
   constructor() {
-    this.routes = {};
+    this.routes = new Map();
     this.currentRoute = null;
-    this.init();
   }
 
-  register(path, callback) {
-    this.routes[path] = callback;
-    console.log(`✅ Route registered: ${path}`);
+  /**
+   * Registrar una ruta
+   * @param {string} path - Ruta (ej: '/', '/positions')
+   * @param {Function} handler - Función que renderiza la vista
+   */
+  register(path, handler) {
+    this.routes.set(path, handler);
   }
 
-  init() {
-    window.addEventListener('hashchange', () => this.navigate());
-    this.navigate();
-  }
-
-  navigate() {
-    const hash = window.location.hash.slice(1) || '/';
-    const path = hash.split('?')[0] || '/';
-
-    if (this.currentRoute === path) return;
-    this.currentRoute = path;
-
-    const route = this.routes[path] || this.routes['/404'];
-    if (!route) {
-      console.error(`❌ Route not found: ${path}`);
-      return;
+  /**
+   * Navegar a una ruta
+   * @param {string} path - Ruta a navegar
+   */
+  navigate(path) {
+    if (!path.startsWith('#')) {
+      path = '#' + path;
     }
-
-    // Limpiar contenido anterior
-    const mainContent = document.querySelector('#main-content');
-    if (mainContent) mainContent.innerHTML = '';
-
-    // Ejecutar vista
-    try {
-      route();
-      this.updateActiveNavigation();
-    } catch (error) {
-      console.error(`❌ Error rendering route ${path}:`, error);
-    }
-  }
-
-  updateActiveNavigation() {
-    // Actualizar sidebar
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.classList.remove('active');
-      const href = item.getAttribute('href').slice(1) || '/';
-      if (href === this.currentRoute) {
-        item.classList.add('active');
-      }
-    });
-  }
-
-  go(path) {
     window.location.hash = path;
+  }
+
+  /**
+   * Obtener ruta actual del hash
+   */
+  getCurrentRoute() {
+    const hash = window.location.hash.slice(1) || '/';
+    return hash.startsWith('/') ? hash : '/' + hash;
+  }
+
+  /**
+   * Ejecutar
+   */
+  handleRoute() {
+    const path = this.getCurrentRoute();
+    const route = this.routes.get(path) || this.routes.get('/');
+
+    if (route && typeof route === 'function') {
+      try {
+        route();
+        this.currentRoute = path;
+      } catch (error) {
+        console.error('Error al renderizar ruta:', error);
+        Notifications.error('Error al cargar la página');
+      }
+    }
+  }
+
+  /**
+   * Inicializar router con listeners
+   */
+  init() {
+    window.addEventListener('hashchange', () => this.handleRoute());
+    this.handleRoute();
   }
 }
 
-window.Router = Router;
+// Crear instancia global
+const router = new Router();

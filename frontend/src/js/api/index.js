@@ -1,100 +1,111 @@
 /**
- * Cliente API mejorado con reintentos y mejor manejo de errores
+ * API Client
+ * Funciones para comunicarse con el backend
  */
-
-const API_BASE_URL = 'http://localhost:8000/api';
-const API_TIMEOUT = 10000; // 10 segundos
-const MAX_RETRIES = 2;
-
-class APIClient {
-  constructor(baseURL = API_BASE_URL) {
-    this.baseURL = baseURL;
-    this.timeout = API_TIMEOUT;
-  }
+const ApiClient = {
+  baseURL: 'http://localhost:8000/api',
 
   /**
-   * Realizar petición HTTP con reintentos y timeout
+   * Realizar petición HTTP
    */
-  async request(method, endpoint, data = null, retries = MAX_RETRIES) {
+  async request(endpoint, options = {}) {
+    const {
+      method = 'GET',
+      body = null,
+      headers = {}
+    } = options;
+
     const url = `${this.baseURL}${endpoint}`;
-    const options = {
+    
+    const config = {
       method,
       headers: {
         'Content-Type': 'application/json',
-      },
+        ...headers
+      }
     };
 
-    if (data) {
-      options.body = JSON.stringify(data);
+    if (body) {
+      config.body = JSON.stringify(body);
     }
 
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
-
-      const response = await fetch(url, {
-        ...options,
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      // Parsear respuesta
-      let responseData;
-      try {
-        responseData = await response.json();
-      } catch (e) {
-        responseData = { message: response.statusText };
-      }
-
-      // Manejar errores HTTP
+      const response = await fetch(url, config);
+      
       if (!response.ok) {
-        const errorMessage = responseData.detail || responseData.message || `HTTP ${response.status}: ${response.statusText}`;
-        throw new Error(errorMessage);
+        throw new Error(`HTTP ${response.status}`);
       }
 
-      return responseData;
+      const data = await response.json();
+      return { success: true, data };
     } catch (error) {
-      // Si es timeout o error de red, reintentar
-      if (retries > 0 && (error.name === 'AbortError' || !navigator.onLine)) {
-        console.warn(`Reintentando... (${MAX_RETRIES - retries + 1}/${MAX_RETRIES})`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return this.request(method, endpoint, data, retries - 1);
-      }
-
-      throw error;
+      console.error('API Error:', error);
+      return { success: false, error: error.message };
     }
+  },
+
+  /**
+   * GET
+   */
+  get(endpoint) {
+    return this.request(endpoint, { method: 'GET' });
+  },
+
+  /**
+   * POST
+   */
+  post(endpoint, body) {
+    return this.request(endpoint, { method: 'POST', body });
+  },
+
+  /**
+   * PUT
+   */
+  put(endpoint, body) {
+    return this.request(endpoint, { method: 'PUT', body });
+  },
+
+  /**
+   * DELETE
+   */
+  delete(endpoint) {
+    return this.request(endpoint, { method: 'DELETE' });
+  },
+
+  // Endpoints específicos
+
+  /**
+   * Obtener posiciones
+   */
+  async getPositions() {
+    return this.get('/positions');
+  },
+
+  /**
+   * Obtener portfolio
+   */
+  async getPortfolio() {
+    return this.get('/portfolio');
+  },
+
+  /**
+   * Crear posición
+   */
+  async createPosition(data) {
+    return this.post('/positions', data);
+  },
+
+  /**
+   * Actualizar posición
+   */
+  async updatePosition(id, data) {
+    return this.put(`/positions/${id}`, data);
+  },
+
+  /**
+   * Eliminar posición
+   */
+  async deletePosition(id) {
+    return this.delete(`/positions/${id}`);
   }
-
-  // POSICIONES
-  positions = {
-    getAll: () => this.request('GET', '/positions'),
-    get: (id) => this.request('GET', `/positions/${id}`),
-    create: (data) => this.request('POST', '/positions', data),
-    update: (id, data) => this.request('PUT', `/positions/${id}`, data),
-    delete: (id) => this.request('DELETE', `/positions/${id}`),
-    sell: (id, data) => this.request('POST', `/positions/${id}/sell`, data),
-  };
-
-  // PORTFOLIO
-  portfolio = {
-    metrics: () => this.request('GET', '/portfolio/metrics'),
-    history: () => this.request('GET', '/portfolio/history'),
-    distribution: () => this.request('GET', '/portfolio/distribution'),
-  };
-
-  // POSICIONES CERRADAS
-  closed = {
-    getAll: () => this.request('GET', '/closed-positions'),
-    stats: () => this.request('GET', '/closed-positions/stats'),
-  };
-
-  // EDUCACIÓN
-  education = {
-    ratios: () => this.request('GET', '/education/ratios'),
-    glossary: () => this.request('GET', '/education/glossary'),
-    tips: () => this.request('GET', '/education/tips'),
-  };
-}
-
-const apiClient = new APIClient();
+};

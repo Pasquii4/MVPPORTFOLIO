@@ -1,122 +1,64 @@
 /**
- * Validadores mejorados para el frontend
+ * Form Validators
+ * Funciones para validación de datos
  */
-
 const Validators = {
   /**
-   * Validar ticker
+   * Validar email
    */
-  ticker: (value) => {
-    if (!value || value.trim().length === 0) {
-      return { valid: false, error: 'Ticker no puede estar vacío' };
-    }
-    if (value.length > 20) {
-      return { valid: false, error: 'Ticker no puede exceder 20 caracteres' };
-    }
-    if (!/^[A-Za-z0-9.\-]+$/.test(value)) {
-      return { valid: false, error: 'Ticker solo puede contener letras, números, guiones y puntos' };
-    }
-    return { valid: true };
+  isEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
   },
 
   /**
-   * Validar cantidad
+   * Validar que no esté vacío
    */
-  quantity: (value) => {
-    if (!value || value === '') {
-      return { valid: false, error: 'Cantidad no puede estar vacía' };
-    }
-    const num = parseFloat(value);
-    if (isNaN(num) || num <= 0) {
-      return { valid: false, error: 'Cantidad debe ser mayor a 0' };
-    }
-    if (num > 1000000) {
-      return { valid: false, error: 'Cantidad no puede exceder 1,000,000' };
-    }
-    return { valid: true };
+  isNotEmpty(value) {
+    return value && value.toString().trim().length > 0;
   },
 
   /**
-   * Validar precio
+   * Validar número
    */
-  price: (value, fieldName = 'Precio') => {
-    if (!value || value === '') {
-      return { valid: false, error: `${fieldName} no puede estar vacío` };
-    }
-    const num = parseFloat(value);
-    if (isNaN(num) || num <= 0) {
-      return { valid: false, error: `${fieldName} debe ser mayor a 0` };
-    }
-    if (num > 1000000) {
-      return { valid: false, error: `${fieldName} no puede exceder 1,000,000` };
-    }
-    return { valid: true };
+  isNumber(value) {
+    return !isNaN(parseFloat(value)) && isFinite(value);
+  },
+
+  /**
+   * Validar número positivo
+   */
+  isPositive(value) {
+    return this.isNumber(value) && parseFloat(value) > 0;
+  },
+
+  /**
+   * Validar longitud mínima
+   */
+  minLength(value, min) {
+    return value && value.toString().length >= min;
+  },
+
+  /**
+   * Validar longitud máxima
+   */
+  maxLength(value, max) {
+    return !value || value.toString().length <= max;
   },
 
   /**
    * Validar fecha
    */
-  date: (value, fieldName = 'Fecha', allowFuture = false) => {
-    if (!value) {
-      return { valid: false, error: `${fieldName} no puede estar vacía` };
-    }
-    const date = new Date(value);
-    if (isNaN(date.getTime())) {
-      return { valid: false, error: `${fieldName} no es válida` };
-    }
-    if (!allowFuture && date > new Date()) {
-      return { valid: false, error: `${fieldName} no puede ser en el futuro` };
-    }
-    return { valid: true };
+  isDate(date) {
+    const d = new Date(date);
+    return d instanceof Date && !isNaN(d);
   },
 
   /**
-   * Validar dividendos
+   * Validar símbolo de bolsa (formato simple)
    */
-  dividends: (value) => {
-    if (value === '' || value === null) {
-      return { valid: true }; // Opcional
-    }
-    const num = parseFloat(value);
-    if (isNaN(num) || num < 0) {
-      return { valid: false, error: 'Dividendos no puede ser negativo' };
-    }
-    return { valid: true };
-  },
-
-  /**
-   * Validar formulario completo
-   */
-  validateForm: (formData) => {
-    const errors = {};
-
-    // Validar ticker
-    const tickerCheck = Validators.ticker(formData.ticker);
-    if (!tickerCheck.valid) errors.ticker = tickerCheck.error;
-
-    // Validar cantidad
-    const quantityCheck = Validators.quantity(formData.quantity);
-    if (!quantityCheck.valid) errors.quantity = quantityCheck.error;
-
-    // Validar precio de compra
-    const buyPriceCheck = Validators.price(formData.buy_price, 'Precio de compra');
-    if (!buyPriceCheck.valid) errors.buy_price = buyPriceCheck.error;
-
-    // Validar precio actual
-    const currentPriceCheck = Validators.price(formData.current_price, 'Precio actual');
-    if (!currentPriceCheck.valid) errors.current_price = currentPriceCheck.error;
-
-    // Validar fecha
-    const dateCheck = Validators.date(formData.buy_date, 'Fecha de compra');
-    if (!dateCheck.valid) errors.buy_date = dateCheck.error;
-
-    // Validar dividendos
-    const dividendsCheck = Validators.dividends(formData.dividends);
-    if (!dividendsCheck.valid) errors.dividends = dividendsCheck.error;
-
-    return {
-      valid: Object.keys(errors).length === 0,
-      errors,
-    };
-  },
+  isStockSymbol(symbol) {
+    const regex = /^[A-Z]{1,5}$/;
+    return regex.test(symbol);
+  }
 };

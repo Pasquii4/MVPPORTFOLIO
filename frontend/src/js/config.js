@@ -1,18 +1,38 @@
 /**
- * Configuración global de la aplicación
+ * App Configuration
+ * Configuración central de la aplicación
  */
+const AppConfig = {
+  appName: 'Portfolio Tracker',
+  appVersion: '2.0.0',
+  apiEndpoint: 'http://localhost:8000/api',
+  
+  // Temas
+  themes: {
+    light: {
+      bg: '#F8FAFB',
+      surface: '#FFFFFF',
+      text: '#1F2937',
+      textSecondary: '#6B7280',
+      accent: '#3B82F6',
+      success: '#10B981',
+      error: '#EF4444'
+    },
+    dark: {
+      bg: '#0F172A',
+      surface: '#1E293B',
+      text: '#F1F5F9',
+      textSecondary: '#CBD5E1',
+      accent: '#3B82F6',
+      success: '#10B981',
+      error: '#EF4444'
+    }
+  },
 
-const CONFIG = {
-    API_BASE_URL: 'http://localhost:8000/api',
-    APP_NAME: 'Portfolio Tracker',
-    APP_VERSION: '1.0.0',
-    DEBUG: false,
-    CURRENCY: '€',
-    CURRENCY_SYMBOL: '€',
-    DECIMAL_PLACES: 2,
+  // Datos por defecto
+  defaults: {
+    pageSize: 10,
+    dateFormat: 'DD/MM/YYYY',
+    currency: 'USD'
+  }
 };
-
-// Log config en desarrollo
-if (CONFIG.DEBUG) {
-    console.log('🔧 Config:', CONFIG);
-}

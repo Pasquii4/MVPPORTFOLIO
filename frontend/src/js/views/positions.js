@@ -44,8 +44,8 @@ Views.positions = function() {
                       <td>${Formatters.currency(pos.current)}</td>
                       <td class="trend-${gain >= 0 ? 'positive' : 'negative'}">${Formatters.currency(gain)}</td>
                       <td>
-                        <button class="btn btn-sm btn-secondary" onclick="editPosition(${pos.id})">Editar</button>
-                        <button class="btn btn-sm btn-danger" onclick="deletePosition(${pos.id})">Eliminar</button>
+                        <button class="btn btn-sm btn-secondary" onclick="window.editPosition(${pos.id})">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="window.deletePosition(${pos.id})">Eliminar</button>
                       </td>
                     </tr>
                   `;
@@ -70,31 +70,24 @@ Views.positions = function() {
   setTimeout(() => {
     const addBtn = document.getElementById('add-position-btn');
     if (addBtn) {
-      addBtn.addEventListener('click', addNewPosition);
+      addBtn.addEventListener('click', () => showNotification('Función en desarrollo', 'info'));
     }
   }, 0);
 };
 
-function addNewPosition() {
-  showNotification('Función de agregar posición en desarrollo', 'info');
-}
-
-function editPosition(id) {
-  showNotification('Función de editar en desarrollo', 'info');
-}
-
-function deletePosition(id) {
+window.deletePosition = function(id) {
   if (confirm('¿Está seguro de eliminar esta posición?')) {
-    AppState.deletePosition(id);
+    const positions = AppState.get('positions') || [];
+    const filtered = positions.filter(p => p.id !== id);
+    AppState.set('positions', filtered);
     Views.positions();
     showNotification('Posición eliminada', 'success');
   }
-}
+};
 
-// Hacer funciones globales
-window.addNewPosition = addNewPosition;
-window.editPosition = editPosition;
-window.deletePosition = deletePosition;
+window.editPosition = function(id) {
+  showNotification('Función de editar en desarrollo', 'info');
+};
 
 if (!window.Views) window.Views = {};
 window.Views.positions = Views.positions;

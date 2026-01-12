@@ -1,25 +1,19 @@
 /**
  * Settings View
- * Gestiona configuración de usuario, tema y notificaciones
  */
 
 const Views = window.Views || {};
 
 Views.settings = function() {
   const mainContent = document.getElementById('main-content');
-  const user = AppState.get('user');
-  const currentTheme = AppState.get('theme');
+  const user = AppState.get('user') || { name: 'Usuario', email: 'user@example.com', joinDate: new Date() };
+  const currentTheme = AppState.get('theme') || 'light';
 
   const html = `
     <div class="page-container">
-      <!-- Header -->
-      <div class="mb-4">
-        <h1 class="page-title">⚙️ Configuración</h1>
-      </div>
+      <h1 class="page-title">⚙️ Configuración</h1>
 
-      <!-- Settings Grid -->
       <div style="max-width: 600px;">
-        <!-- Tema -->
         <div class="settings-section mb-4">
           <h2 style="font-size: 1.1rem; margin-bottom: 16px;">Apariencia</h2>
           
@@ -32,7 +26,6 @@ Views.settings = function() {
           </div>
         </div>
 
-        <!-- Perfil -->
         <div class="settings-section mb-4">
           <h2 style="font-size: 1.1rem; margin-bottom: 16px;">Perfil</h2>
           
@@ -57,34 +50,6 @@ Views.settings = function() {
           </div>
         </div>
 
-        <!-- Notificaciones -->
-        <div class="settings-section mb-4">
-          <h2 style="font-size: 1.1rem; margin-bottom: 16px;">Notificaciones</h2>
-          
-          <div class="settings-option">
-            <input type="checkbox" checked>
-            <div class="option-content" style="flex: 1;">
-              <div class="option-title">Alertas de Precio</div>
-              <div class="option-description">Recibe notificaciones cuando alcanzas objetivos de precio</div>
-            </div>
-          </div>
-          <div class="settings-option">
-            <input type="checkbox" checked>
-            <div class="option-content" style="flex: 1;">
-              <div class="option-title">Resumen Diario</div>
-              <div class="option-description">Recibe resumen de tu portafolio cada día</div>
-            </div>
-          </div>
-          <div class="settings-option">
-            <input type="checkbox">
-            <div class="option-content" style="flex: 1;">
-              <div class="option-title">Noticias de Mercado</div>
-              <div class="option-description">Recibe actualizaciones de noticias financieras</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Acciones Peligrosas -->
         <div class="settings-section mb-4">
           <h2 style="font-size: 1.1rem; margin-bottom: 16px; color: var(--color-error);">Zona de Peligro</h2>
           
@@ -112,53 +77,41 @@ Views.settings = function() {
     const resetBtn = document.getElementById('reset-btn');
 
     if (darkToggle) {
-      darkToggle.addEventListener('change', toggleThemeSettings);
+      darkToggle.addEventListener('change', () => {
+        const newTheme = darkToggle.checked ? 'dark' : 'light';
+        themeManager.set(newTheme);
+        AppState.set('theme', newTheme);
+        renderNavbar();
+        showNotification(`Tema cambiado a ${newTheme}`, 'success');
+      });
     }
     if (saveBtn) {
-      saveBtn.addEventListener('click', saveUserSettings);
+      saveBtn.addEventListener('click', () => {
+        const name = document.getElementById('user-name').value;
+        const email = document.getElementById('user-email').value;
+        
+        if (!name || !email) {
+          showNotification('Por favor completa todos los campos', 'error');
+          return;
+        }
+        
+        const currentUser = AppState.get('user') || {};
+        AppState.set('user', { ...currentUser, name, email });
+        renderNavbar();
+        showNotification('Perfil actualizado correctamente', 'success');
+      });
     }
     if (resetBtn) {
-      resetBtn.addEventListener('click', resetData);
+      resetBtn.addEventListener('click', () => {
+        if (confirm('¿Estás seguro? Esta acción eliminará todos tus datos.')) {
+          StorageManager.clear();
+          showNotification('Datos eliminados correctamente', 'success');
+          setTimeout(() => window.location.hash = '#/', 1000);
+        }
+      });
     }
   }, 0);
 };
-
-function toggleThemeSettings() {
-  const toggle = document.getElementById('dark-mode-toggle');
-  const newTheme = toggle.checked ? 'dark' : 'light';
-  themeManager.set(newTheme);
-  AppState.set('theme', newTheme);
-  renderNavbar();
-  showNotification(`Tema cambiado a ${newTheme}`, 'success');
-}
-
-function saveUserSettings() {
-  const name = document.getElementById('user-name').value;
-  const email = document.getElementById('user-email').value;
-  
-  if (!name || !email) {
-    showNotification('Por favor completa todos los campos', 'error');
-    return;
-  }
-  
-  AppState.set('user.name', name);
-  AppState.set('user.email', email);
-  renderNavbar();
-  showNotification('Perfil actualizado correctamente', 'success');
-}
-
-function resetData() {
-  if (confirm('¿Estás seguro? Esta acción eliminará todos tus datos.')) {
-    AppState.reset();
-    showNotification('Datos eliminados correctamente', 'success');
-    setTimeout(() => window.location.hash = '#/', 1000);
-  }
-}
-
-// Hacer funciones globales
-window.toggleThemeSettings = toggleThemeSettings;
-window.saveUserSettings = saveUserSettings;
-window.resetData = resetData;
 
 if (!window.Views) window.Views = {};
 window.Views.settings = Views.settings;

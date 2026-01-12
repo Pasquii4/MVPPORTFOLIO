@@ -13,13 +13,14 @@ class Router {
   // Inicializar router
   init() {
     window.addEventListener('hashchange', () => this.handleRouteChange());
-    window.addEventListener('load', () => this.handleRouteChange());
+    window.addEventListener('DOMContentLoaded', () => this.handleRouteChange());
     console.log('✅ Router inicializado');
   }
 
   // Registrar ruta
   register(path, handler) {
     this.routes[path] = handler;
+    console.log(`✅ Ruta registrada: ${path}`);
   }
 
   // Navegar a ruta
@@ -57,13 +58,19 @@ class Router {
       const mainContent = document.getElementById('main-content');
       if (mainContent) {
         try {
+          // Limpiar contenido anterior
           mainContent.innerHTML = '';
+          
+          // Renderizar nueva vista
           handler();
+          
           console.log(`✅ Vista renderizada: ${hash}`);
         } catch (error) {
           console.error(`❌ Error renderizando vista ${hash}:`, error);
-          mainContent.innerHTML = `<div class="page-container"><p style="color: var(--color-error);">Error cargando página: ${error.message}</p></div>`;
+          mainContent.innerHTML = `<div class="page-container"><p style="color: var(--color-error); padding: 20px;">Error cargando página: ${error.message}</p></div>`;
         }
+      } else {
+        console.error('❌ No se encontró #main-content');
       }
     } else {
       console.warn(`⚠️ Ruta no registrada: ${hash}`);

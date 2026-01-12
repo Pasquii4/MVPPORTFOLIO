@@ -1,0 +1,49 @@
+# Entornos virtuales
+venv/
+env/
+.venv
+*.egg-info/
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Base de datos
+*.db
+*.sqlite
+*.sqlite3
+portfolio.db
+test_portfolio.db
+
+# Envvars
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Logs
+logs/
+*.log
+
+# Misc
+.DS_Store
+Thumbs.db

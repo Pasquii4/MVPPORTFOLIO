@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./portfolio.db
+      - DEBUG=False
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    image: python:3.11-slim
+    working_dir: /app
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./frontend/src:/app
+    command: python -m http.server 8001

@@ -129,4 +129,5 @@ class Sidebar {
   }
 }
 
-export default Sidebar;
+// Registrar globalmente (sin export para scripts normales)
+window.Sidebar = Sidebar;

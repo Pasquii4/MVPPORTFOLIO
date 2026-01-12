@@ -23,7 +23,7 @@ Views.settings = function() {
         <div class="settings-section mb-4">
           <h2 style="font-size: 1.1rem; margin-bottom: 16px;">Apariencia</h2>
           
-          <div class="settings-option" onclick="toggleTheme()">
+          <div class="settings-option">
             <input type="checkbox" id="dark-mode-toggle" ${currentTheme === 'dark' ? 'checked' : ''}>
             <div class="option-content" style="flex: 1;">
               <div class="option-title">Modo Oscuro</div>
@@ -52,9 +52,7 @@ Views.settings = function() {
               </div>
             </div>
             <div class="card-footer">
-              <button class="btn btn-primary" onclick="saveUserSettings()">
-                <span style="margin-right: 8px;">💾</span> Guardar Cambios
-              </button>
+              <button class="btn btn-primary" id="save-settings-btn">💾 Guardar Cambios</button>
             </div>
           </div>
         </div>
@@ -95,8 +93,8 @@ Views.settings = function() {
               <p style="color: var(--color-text-secondary); margin-bottom: 16px;">
                 Estas acciones son irreversibles. Úsalas con cuidado.
               </p>
-              <button class="btn btn-outline" onclick="resetData()" style="color: var(--color-error); border-color: var(--color-error);">
-                <span style="margin-right: 8px;">🗑️</span> Limpiar Datos
+              <button class="btn btn-outline" id="reset-btn" style="color: var(--color-error); border-color: var(--color-error);">
+                🗑️ Limpiar Datos
               </button>
             </div>
           </div>
@@ -106,14 +104,31 @@ Views.settings = function() {
   `;
 
   mainContent.innerHTML = html;
-  attachSettingsEvents();
+
+  // Agregar listeners
+  setTimeout(() => {
+    const darkToggle = document.getElementById('dark-mode-toggle');
+    const saveBtn = document.getElementById('save-settings-btn');
+    const resetBtn = document.getElementById('reset-btn');
+
+    if (darkToggle) {
+      darkToggle.addEventListener('change', toggleThemeSettings);
+    }
+    if (saveBtn) {
+      saveBtn.addEventListener('click', saveUserSettings);
+    }
+    if (resetBtn) {
+      resetBtn.addEventListener('click', resetData);
+    }
+  }, 0);
 };
 
-function toggleTheme() {
+function toggleThemeSettings() {
   const toggle = document.getElementById('dark-mode-toggle');
   const newTheme = toggle.checked ? 'dark' : 'light';
   themeManager.set(newTheme);
   AppState.set('theme', newTheme);
+  renderNavbar();
   showNotification(`Tema cambiado a ${newTheme}`, 'success');
 }
 
@@ -128,6 +143,7 @@ function saveUserSettings() {
   
   AppState.set('user.name', name);
   AppState.set('user.email', email);
+  renderNavbar();
   showNotification('Perfil actualizado correctamente', 'success');
 }
 
@@ -135,20 +151,14 @@ function resetData() {
   if (confirm('¿Estás seguro? Esta acción eliminará todos tus datos.')) {
     AppState.reset();
     showNotification('Datos eliminados correctamente', 'success');
-    setTimeout(() => router.navigate('#/'), 1000);
+    setTimeout(() => window.location.hash = '#/', 1000);
   }
 }
 
-function attachSettingsEvents() {
-  document.querySelectorAll('.settings-option input[type="checkbox"]').forEach(checkbox => {
-    checkbox.addEventListener('change', (e) => {
-      if (e.target === document.getElementById('dark-mode-toggle')) {
-        toggleTheme();
-      }
-    });
-  });
-}
+// Hacer funciones globales
+window.toggleThemeSettings = toggleThemeSettings;
+window.saveUserSettings = saveUserSettings;
+window.resetData = resetData;
 
-// Agregar a window
 if (!window.Views) window.Views = {};
 window.Views.settings = Views.settings;

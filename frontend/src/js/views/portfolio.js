@@ -22,7 +22,7 @@ Views.portfolio = function() {
     <div class="page-container">
       <!-- Header -->
       <div class="mb-4">
-        <h1 class="page-title">Mi Portafolio</h1>
+        <h1 class="page-title">🎯 Mi Portafolio</h1>
       </div>
 
       <!-- Portfolio Summary -->
@@ -85,19 +85,26 @@ Views.portfolio = function() {
       <!-- Acciones -->
       <div class="portfolio-actions mt-4">
         <div class="action-buttons">
-          <button class="btn btn-primary" onclick="router.navigate('#/positions')">
-            <span style="margin-right: 8px;">📊</span> Ver Posiciones
-          </button>
-          <button class="btn btn-secondary" onclick="exportPortfolio()">
-            <span style="margin-right: 8px;">⬇️</span> Exportar
-          </button>
+          <button class="btn btn-primary" id="view-positions-btn">📊 Ver Posiciones</button>
+          <button class="btn btn-secondary" id="export-btn">⬇️ Exportar</button>
         </div>
       </div>
     </div>
   `;
 
   mainContent.innerHTML = html;
-  attachEventListeners();
+
+  // Agregar listeners
+  setTimeout(() => {
+    const viewBtn = document.getElementById('view-positions-btn');
+    const exportBtn = document.getElementById('export-btn');
+    if (viewBtn) {
+      viewBtn.addEventListener('click', () => window.location.hash = '#/positions');
+    }
+    if (exportBtn) {
+      exportBtn.addEventListener('click', exportPortfolio);
+    }
+  }, 0);
 };
 
 function exportPortfolio() {
@@ -111,15 +118,8 @@ function exportPortfolio() {
   showNotification('Portafolio exportado correctamente', 'success');
 }
 
-function attachEventListeners() {
-  // Adjuntar eventos después de renderizar
-  document.querySelectorAll('.btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      if (btn.onclick) btn.onclick(e);
-    });
-  });
-}
+// Hacer función global
+window.exportPortfolio = exportPortfolio;
 
-// Agregar a window
 if (!window.Views) window.Views = {};
 window.Views.portfolio = Views.portfolio;

@@ -14,49 +14,65 @@ Views.positions = function() {
       
       <div class="view-controls mb-4">
         <input type="search" class="form-input" placeholder="Buscar..." id="search-input">
-        <button class="btn btn-primary" onclick="addNewPosition()">+ Nueva Posición</button>
+        <button class="btn btn-primary" id="add-position-btn">+ Nueva Posición</button>
       </div>
 
       <div class="card">
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Símbolo</th>
-                <th>Nombre</th>
-                <th>Cantidad</th>
-                <th>Entrada</th>
-                <th>Actual</th>
-                <th>Ganancia</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${positions.map(pos => {
-                const gain = (pos.current - pos.entry) * pos.quantity;
-                return `
-                  <tr>
-                    <td><strong>${pos.symbol}</strong></td>
-                    <td>${pos.name}</td>
-                    <td>${pos.quantity}</td>
-                    <td>${Formatters.currency(pos.entry)}</td>
-                    <td>${Formatters.currency(pos.current)}</td>
-                    <td class="trend-${gain >= 0 ? 'positive' : 'negative'}">${Formatters.currency(gain)}</td>
-                    <td>
-                      <button class="btn btn-sm btn-secondary" onclick="editPosition(${pos.id})">Editar</button>
-                      <button class="btn btn-sm btn-danger" onclick="deletePosition(${pos.id})">Eliminar</button>
-                    </td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>
+        ${positions.length > 0 ? `
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Símbolo</th>
+                  <th>Nombre</th>
+                  <th>Cantidad</th>
+                  <th>Entrada</th>
+                  <th>Actual</th>
+                  <th>Ganancia</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${positions.map(pos => {
+                  const gain = (pos.current - pos.entry) * pos.quantity;
+                  return `
+                    <tr>
+                      <td><strong>${pos.symbol}</strong></td>
+                      <td>${pos.name}</td>
+                      <td>${pos.quantity}</td>
+                      <td>${Formatters.currency(pos.entry)}</td>
+                      <td>${Formatters.currency(pos.current)}</td>
+                      <td class="trend-${gain >= 0 ? 'positive' : 'negative'}">${Formatters.currency(gain)}</td>
+                      <td>
+                        <button class="btn btn-sm btn-secondary" onclick="editPosition(${pos.id})">Editar</button>
+                        <button class="btn btn-sm btn-danger" onclick="deletePosition(${pos.id})">Eliminar</button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        ` : `
+          <div class="card-body" style="text-align: center;">
+            <p style="color: var(--color-text-secondary); margin: 20px 0;">
+              No hay posiciones aún. <a href="#/" style="color: var(--color-accent);">Volver al dashboard</a>
+            </p>
+          </div>
+        `}
       </div>
     </div>
   `;
 
   mainContent.innerHTML = html;
+
+  // Agregar listeners
+  setTimeout(() => {
+    const addBtn = document.getElementById('add-position-btn');
+    if (addBtn) {
+      addBtn.addEventListener('click', addNewPosition);
+    }
+  }, 0);
 };
 
 function addNewPosition() {
@@ -74,6 +90,11 @@ function deletePosition(id) {
     showNotification('Posición eliminada', 'success');
   }
 }
+
+// Hacer funciones globales
+window.addNewPosition = addNewPosition;
+window.editPosition = editPosition;
+window.deletePosition = deletePosition;
 
 if (!window.Views) window.Views = {};
 window.Views.positions = Views.positions;

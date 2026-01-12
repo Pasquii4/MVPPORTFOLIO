@@ -16,37 +16,37 @@ function renderSidebar() {
     <nav class="sidebar-nav">
       <ul class="nav-list">
         <li class="nav-item">
-          <a class="nav-link active" data-route="/" onclick="router.navigate('/')">
+          <a class="nav-link active" data-route="/" href="#/">
             <span class="nav-icon">📊</span>
             <span class="nav-label">Dashboard</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" data-route="/positions" onclick="router.navigate('#/positions')">
+          <a class="nav-link" data-route="/positions" href="#/positions">
             <span class="nav-icon">📈</span>
             <span class="nav-label">Posiciones</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" data-route="/analytics" onclick="router.navigate('#/analytics')">
+          <a class="nav-link" data-route="/analytics" href="#/analytics">
             <span class="nav-icon">📉</span>
             <span class="nav-label">Analytics</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" data-route="/portfolio" onclick="router.navigate('#/portfolio')">
+          <a class="nav-link" data-route="/portfolio" href="#/portfolio">
             <span class="nav-icon">🎯</span>
             <span class="nav-label">Portafolio</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" data-route="/education" onclick="router.navigate('#/education')">
+          <a class="nav-link" data-route="/education" href="#/education">
             <span class="nav-icon">🎓</span>
             <span class="nav-label">Educación</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" data-route="/settings" onclick="router.navigate('#/settings')">
+          <a class="nav-link" data-route="/settings" href="#/settings">
             <span class="nav-icon">⚙️</span>
             <span class="nav-label">Configuración</span>
           </a>
@@ -57,4 +57,19 @@ function renderSidebar() {
       <p class="app-version">v2.0.0</p>
     </div>
   `;
+
+  // Agregar listeners
+  attachSidebarListeners();
+}
+
+function attachSidebarListeners() {
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      if (href) {
+        window.location.hash = href;
+      }
+    });
+  });
 }

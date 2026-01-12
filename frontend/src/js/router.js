@@ -14,6 +14,7 @@ class Router {
   init() {
     window.addEventListener('hashchange', () => this.handleRouteChange());
     window.addEventListener('load', () => this.handleRouteChange());
+    console.log('✅ Router inicializado');
   }
 
   // Registrar ruta
@@ -23,33 +24,49 @@ class Router {
 
   // Navegar a ruta
   navigate(path) {
+    // Normalizar path
+    if (!path.startsWith('#')) {
+      path = '#' + path;
+    }
     window.location.hash = path;
   }
 
   // Manejar cambio de ruta
   handleRouteChange() {
-    const hash = window.location.hash.slice(1) || '/';
-    const path = hash.split('?')[0];
+    let hash = window.location.hash.slice(1) || '/';
+    
+    // Limpiar query params
+    hash = hash.split('?')[0];
     
     // Normalizar rutas
-    const normalizedPath = path === '/dashboard' ? '/' : path;
+    if (hash === '' || hash === '/dashboard') {
+      hash = '/';
+    }
     
-    const handler = this.routes[normalizedPath] || this.routes['/'];
+    console.log(`🔗 Navegando a: ${hash}`);
+    
+    const handler = this.routes[hash] || this.routes['/'];
     
     if (handler && typeof handler === 'function') {
-      this.currentRoute = normalizedPath;
+      this.currentRoute = hash;
+      
+      // Actualizar navegación
+      this.updateActiveNav(hash);
       
       // Obtener contenedor
       const mainContent = document.getElementById('main-content');
       if (mainContent) {
-        mainContent.innerHTML = '';
-        handler();
+        try {
+          mainContent.innerHTML = '';
+          handler();
+          console.log(`✅ Vista renderizada: ${hash}`);
+        } catch (error) {
+          console.error(`❌ Error renderizando vista ${hash}:`, error);
+          mainContent.innerHTML = `<div class="page-container"><p style="color: var(--color-error);">Error cargando página: ${error.message}</p></div>`;
+        }
       }
-
-      // Actualizar navegación
-      this.updateActiveNav(normalizedPath);
     } else {
-      console.warn(`Ruta no encontrada: ${normalizedPath}`);
+      console.warn(`⚠️ Ruta no registrada: ${hash}`);
     }
   }
 
@@ -61,8 +78,8 @@ class Router {
     });
     
     // Agregar a la ruta actual
-    const normalizedForNav = path === '/' ? 'dashboard' : path.slice(1);
-    const activeLink = document.querySelector(`[data-route="${path}"], [data-route="#${path}"]`);
+    let navPath = path === '/' ? '/' : '/' + path;
+    const activeLink = document.querySelector(`[data-route="${navPath}"]`);
     if (activeLink) {
       activeLink.classList.add('active');
     }
@@ -76,3 +93,6 @@ class Router {
 
 // Crear instancia global
 const router = new Router();
+
+// Hacer disponible en window
+window.router = router;

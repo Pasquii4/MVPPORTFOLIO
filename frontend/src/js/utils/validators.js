@@ -1,64 +1,60 @@
 /**
- * Form Validators
- * Funciones para validación de datos
+ * Validators
+ * Validaciones de formularios y datos
  */
+
 const Validators = {
-  /**
-   * Validar email
-   */
-  isEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
+  // Validar email
+  isEmail: function(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
   },
 
-  /**
-   * Validar que no esté vacío
-   */
-  isNotEmpty(value) {
-    return value && value.toString().trim().length > 0;
+  // Validar número
+  isNumber: function(value) {
+    return !isNaN(value) && value !== '';
   },
 
-  /**
-   * Validar número
-   */
-  isNumber(value) {
-    return !isNaN(parseFloat(value)) && isFinite(value);
+  // Validar que no esté vacío
+  isRequired: function(value) {
+    return value && value.trim() !== '';
   },
 
-  /**
-   * Validar número positivo
-   */
-  isPositive(value) {
-    return this.isNumber(value) && parseFloat(value) > 0;
+  // Validar longitud mínima
+  minLength: function(value, min) {
+    return value && value.length >= min;
   },
 
-  /**
-   * Validar longitud mínima
-   */
-  minLength(value, min) {
-    return value && value.toString().length >= min;
+  // Validar longitud máxima
+  maxLength: function(value, max) {
+    return value && value.length <= max;
   },
 
-  /**
-   * Validar longitud máxima
-   */
-  maxLength(value, max) {
-    return !value || value.toString().length <= max;
+  // Validar rango de números
+  inRange: function(value, min, max) {
+    return value >= min && value <= max;
   },
 
-  /**
-   * Validar fecha
-   */
-  isDate(date) {
-    const d = new Date(date);
-    return d instanceof Date && !isNaN(d);
-  },
-
-  /**
-   * Validar símbolo de bolsa (formato simple)
-   */
-  isStockSymbol(symbol) {
-    const regex = /^[A-Z]{1,5}$/;
-    return regex.test(symbol);
+  // Validar forma de formulario
+  validateForm: function(form, rules) {
+    const errors = {};
+    
+    for (const field in rules) {
+      const input = form.querySelector(`[name="${field}"]`);
+      if (!input) continue;
+      
+      const value = input.value;
+      const fieldRules = rules[field];
+      
+      for (const rule in fieldRules) {
+        const valid = this[rule](value, fieldRules[rule]);
+        if (!valid) {
+          errors[field] = `${field} es inválido`;
+          break;
+        }
+      }
+    }
+    
+    return Object.keys(errors).length === 0 ? null : errors;
   }
 };
